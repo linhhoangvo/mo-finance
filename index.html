@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Mô Finance</title>
-  <meta name="description" content="Real-estate finance dashboard for acquisition, renovation, rental, loans and sales." />
+  <meta name="description" content="Mô Finance — quản trị tài chính danh mục bất động sản." />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
@@ -12,12 +12,8 @@
     <aside class="sidebar">
       <div class="brand">
         <div class="brand-mark">M</div>
-        <div>
-          <strong>Mô Finance</strong>
-          <small>Property finance</small>
-        </div>
+        <div><strong>Mô Finance</strong><small>Property finance</small></div>
       </div>
-
       <nav id="nav">
         <button class="nav-item active" data-view="dashboard">Dashboard</button>
         <button class="nav-item" data-view="properties">Properties</button>
@@ -27,18 +23,12 @@
         <button class="nav-item" data-view="sales">Sales</button>
         <button class="nav-item" data-view="reports">Reports</button>
       </nav>
-
-      <div class="sidebar-footer">
-        <small>V1 · Local data only</small>
-      </div>
+      <div class="sidebar-footer"><small>V2 · Portfolio model</small></div>
     </aside>
 
     <main>
       <header class="topbar">
-        <div>
-          <p class="eyebrow">PORTFOLIO</p>
-          <h1 id="pageTitle">Dashboard</h1>
-        </div>
+        <div><p class="eyebrow">PORTFOLIO</p><h1 id="pageTitle">Dashboard</h1></div>
         <button class="primary" id="addTransactionBtn">+ Add transaction</button>
       </header>
 
@@ -52,35 +42,28 @@
     </main>
   </div>
 
+  <dialog id="propertyDialog" class="wide-dialog">
+    <div id="propertyDetail"></div>
+  </dialog>
+
   <dialog id="transactionDialog">
     <form method="dialog" id="transactionForm">
       <div class="dialog-head">
-        <div>
-          <p class="eyebrow">NEW ENTRY</p>
-          <h2>Add transaction</h2>
-        </div>
+        <div><p class="eyebrow">NEW ENTRY</p><h2>Add transaction</h2></div>
         <button class="icon-btn" value="cancel" aria-label="Close">×</button>
       </div>
-
       <div class="form-grid">
         <label>Date<input id="txDate" type="date" required></label>
         <label>Property<select id="txProperty" required></select></label>
-        <label>Type
-          <select id="txType" required>
-            <option>Expense</option>
-            <option>Income</option>
-            <option>Capital Contribution</option>
-            <option>Loan In</option>
-            <option>Loan Repayment</option>
-            <option>Transfer</option>
-          </select>
-        </label>
+        <label>Type<select id="txType" required>
+          <option>Expense</option><option>Income</option><option>Capital Contribution</option>
+          <option>Loan In</option><option>Loan Repayment</option><option>Transfer</option>
+        </select></label>
         <label>Category<input id="txCategory" placeholder="Renovation, Legal, Rent..." required></label>
         <label class="span-2">Description<input id="txDescription" placeholder="Nội dung giao dịch" required></label>
         <label>Amount (VND)<input id="txAmount" inputmode="numeric" type="number" min="0" step="1000" required></label>
-        <label>Source / Paid by<input id="txSource" placeholder="Milan, Tú, Bank..."></label>
+        <label>Source / Paid by<input id="txSource" placeholder="Owner, Bank, Supplier..."></label>
       </div>
-
       <div class="dialog-actions">
         <button class="ghost" value="cancel">Cancel</button>
         <button class="primary" id="saveTransaction" value="default">Save transaction</button>
