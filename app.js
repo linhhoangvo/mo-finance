@@ -16,8 +16,8 @@ const seed = {
     {id:3,date:"2026-05-27",property:"mo-sen",type:"Expense",category:"Furniture",description:"Ga gối",amount:3800000,source:"Owner"}
   ],
   loans:[
-    {name:"Bank portfolio A",principal:11600000000,outstanding:11600000000,interestPaid:644942745,type:"Bank"},
-    {name:"Bank portfolio B",principal:7790000000,outstanding:7790000000,interestPaid:375983245,type:"Bank"},
+    {name:"Chị Tú",principal:11600000000,outstanding:11600000000,interestPaid:644942745,type:"Bank"},
+    {name:"Chị Milan",principal:7790000000,outstanding:7790000000,interestPaid:375983245,type:"Bank"},
     {name:"Private loan A",principal:2000000000,outstanding:2000000000,interestPaid:0,type:"Private"},
     {name:"Private loan B",principal:2000000000,outstanding:2000000000,interestPaid:24657534,type:"Private"}
   ],
