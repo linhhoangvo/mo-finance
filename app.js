@@ -41,6 +41,8 @@ const state=JSON.parse(localStorage.getItem(storageKey)||"null")||structuredClon
 const save=()=>localStorage.setItem(storageKey,JSON.stringify(state));
 // Incremental source-sheet import. Fixed source-row IDs make reloading idempotent.
 const sheetUpdates=[
+ {row:602,date:"2026-09-11",property:"general",category:"Payroll",description:"Chi phí lương Cam",amount:239000000},
+
  {row:592,date:"2026-10-02",property:"mo-sen",category:"Legal",description:"Làm sổ + đóng thuế đưa nhà vào sổ nhà Sen",amount:1021930},
  {row:593,date:"2026-10-02",property:"general",category:"Business registration",description:"Chuyển khoản tiền ĐKKD nhà Cẩm Thanh",amount:3000000},
  {row:594,date:"2026-10-07",property:"general",category:"Nương Ôm",description:"Nương Ôm cảm ơn chi",amount:2000000},
