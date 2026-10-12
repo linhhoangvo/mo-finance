@@ -23,7 +23,7 @@
         <button class="nav-item" data-view="sales">Sales</button>
         <button class="nav-item" data-view="reports">Reports</button>
       </nav>
-      <div class="sidebar-footer"><small>V2 · Portfolio model</small></div>
+      <div class="sidebar-footer"><small>V3 · Loan allocation</small></div>
     </aside>
 
     <main>
@@ -71,6 +71,20 @@
     </form>
   </dialog>
 
+  <dialog id="loanAllocationDialog">
+    <div style="padding:22px">
+      <div class="dialog-head"><div><p class="eyebrow">DEBT ALLOCATION</p><h2 id="allocationTitle">Allocate loan</h2><p id="allocationSummary"></p></div><button class="icon-btn" type="button" onclick="document.querySelector('#loanAllocationDialog').close()" aria-label="Close">×</button></div>
+      <div id="allocationRows" class="breakdown"></div>
+      <form id="allocationForm">
+        <div class="form-grid">
+          <label>Property<select id="allocationProperty" required></select></label>
+          <label>Allocate amount (VND)<input id="allocationAmount" type="number" min="1" step="1" required></label>
+        </div>
+        <p id="allocationError" role="alert" style="color:#a5493f"></p>
+        <div class="dialog-actions"><button type="button" class="ghost" onclick="document.querySelector('#loanAllocationDialog').close()">Done</button><button class="primary" type="submit">Add allocation</button></div>
+      </form>
+    </div>
+  </dialog>
   <script src="app.js"></script>
 </body>
 </html>
