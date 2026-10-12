@@ -39,6 +39,26 @@ const shortMoney=n=>{const v=Number(n||0);if(Math.abs(v)>=1e9)return (v/1e9).toF
 const storageKey="moFinanceDataV2";
 const state=JSON.parse(localStorage.getItem(storageKey)||"null")||structuredClone(seed);
 const save=()=>localStorage.setItem(storageKey,JSON.stringify(state));
+// Incremental source-sheet import. Fixed source-row IDs make reloading idempotent.
+const sheetUpdates=[
+ {row:592,date:"2026-10-02",property:"mo-sen",category:"Legal",description:"Làm sổ + đóng thuế đưa nhà vào sổ nhà Sen",amount:1021930},
+ {row:593,date:"2026-10-02",property:"general",category:"Business registration",description:"Chuyển khoản tiền ĐKKD nhà Cẩm Thanh",amount:3000000},
+ {row:594,date:"2026-10-07",property:"general",category:"Nương Ôm",description:"Nương Ôm cảm ơn chi",amount:2000000},
+ {row:595,date:"2026-10-07",property:"general",category:"Legal",description:"Giấy tờ Mô",amount:275000},
+ {row:596,date:"2026-10-07",property:"general",category:"Legal",description:"Giấy tờ Mô",amount:145000},
+ {row:597,date:"2026-10-07",property:"general",category:"Payroll",description:"Lương Cam tháng 9",amount:7000000},
+ {row:598,date:"2026-10-07",property:"general",category:"Payroll",description:"Lương Duy Tháng 9",amount:10000000}
+];
+let sheetChanged=false;
+for(const t of sheetUpdates){
+ const id="sheet-tong-"+t.row;
+ if(!state.transactions.some(x=>String(x.id)===id)){
+  state.transactions.push({id,date:t.date,property:t.property,type:"Expense",category:t.category,description:t.description,amount:t.amount,source:"Google Sheets · Tổng · row "+t.row});
+  sheetChanged=true;
+ }
+}
+if(sheetChanged)localStorage.setItem(storageKey,JSON.stringify(state));
+
 state.loans.forEach((loan,i)=>{if(!loan.id)loan.id="loan-"+i;if(!Array.isArray(loan.allocations))loan.allocations=[]});
 const escapeHtml=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const loanAllocated=loan=>(loan.allocations||[]).reduce((sum,a)=>sum+Number(a.amount||0),0);
