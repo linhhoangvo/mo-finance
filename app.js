@@ -39,6 +39,12 @@ const shortMoney=n=>{const v=Number(n||0);if(Math.abs(v)>=1e9)return (v/1e9).toF
 const storageKey="moFinanceDataV2";
 const state=JSON.parse(localStorage.getItem(storageKey)||"null")||structuredClone(seed);
 const save=()=>localStorage.setItem(storageKey,JSON.stringify(state));
+state.loans.forEach((loan,i)=>{if(!loan.id)loan.id="loan-"+i;if(!Array.isArray(loan.allocations))loan.allocations=[]});
+const escapeHtml=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const loanAllocated=loan=>(loan.allocations||[]).reduce((sum,a)=>sum+Number(a.amount||0),0);
+const propertyLoanBalance=propertyId=>state.loans.reduce((sum,loan)=>sum+(loan.allocations||[]).filter(a=>a.propertyId===propertyId).reduce((v,a)=>v+Number(a.amount||0),0),0);
+const loanUnallocated=loan=>Math.max(0,Number(loan.outstanding||0)-loanAllocated(loan));
+
 const propName=id=>state.properties.find(p=>p.id===id)?.name||"General";
 const activeProps=()=>state.properties.filter(p=>p.status!=="Sold");
 const costBasis=p=>Number(p.paid||0)+Number(p.outstanding||0);
@@ -59,9 +65,9 @@ function propertyTable(list=state.properties){
 function renderDashboard(){
  const active=activeProps(), activeCost=active.reduce((s,p)=>s+costBasis(p),0);
  const payables=active.reduce((s,p)=>s+Number(p.outstanding||0),0);
- const estimatedEquity=active.reduce((s,p)=>s+(Number(p.market||0)||costBasis(p))-Number(p.debtAllocated||0),0);
+ const allocatedDebt=active.reduce((s,p)=>s+propertyLoanBalance(p.id),0);
  document.querySelector("#dashboard").innerHTML=`
- <div class="note"><strong>V2:</strong> portfolio model lấy cấu trúc và số liệu tổng hợp từ workbook. Các khoản vay chưa được phân bổ chính xác về từng tài sản nên Equity theo property sẽ chỉ chính xác sau khi gắn loan → property.</div>
+ <div class="note"><strong>V2:</strong> portfolio model lấy cấu trúc và số liệu tổng hợp từ workbook. V3: phân bổ dư nợ theo từng tài sản trong Loans → Allocate. Khoản chưa phân bổ vẫn được giữ ở cấp danh mục; không tự suy đoán khoản vay thuộc nhà nào.</div>
  <div class="kpi-grid">
    ${kpi("Active cost basis",shortMoney(activeCost),"Tài sản chưa bán")}
    ${kpi("Portfolio debt",shortMoney(totalDebt()),"Bank + private")}
@@ -96,11 +102,43 @@ function renderTransactions(){
 }
 
 function renderLoans(){
+ const allocated=state.loans.reduce((v,l)=>v+loanAllocated(l),0);
  document.querySelector("#loans").innerHTML=`
- <div class="kpi-grid">${kpi("Total outstanding",shortMoney(totalDebt()),"All loans")}${kpi("Interest paid",shortMoney(totalInterestPaid()),"Workbook history")}${kpi("Bank debt",shortMoney(state.loans.filter(x=>x.type==="Bank").reduce((s,x)=>s+x.outstanding,0)),"Bank")}${kpi("Private debt",shortMoney(state.loans.filter(x=>x.type==="Private").reduce((s,x)=>s+x.outstanding,0)),"Private")}</div>
- <div class="section"><div class="table-wrap"><table><thead><tr><th>Loan</th><th>Type</th><th class="money">Principal</th><th class="money">Outstanding</th><th class="money">Interest paid</th></tr></thead><tbody>
- ${state.loans.map(l=>`<tr><td><strong>${l.name}</strong></td><td><span class="badge debt">${l.type}</span></td><td class="money">${money(l.principal)}</td><td class="money">${money(l.outstanding)}</td><td class="money">${money(l.interestPaid)}</td></tr>`).join("")}
- </tbody></table></div></div>`;
+ <div class="note">Phân bổ dư nợ cho từng tài sản bằng nút <strong>Allocate</strong>. Đây là phân bổ phục vụ quản trị, không làm thay đổi tổng nợ. Phần chưa gắn tài sản sẽ không được tự động đưa vào phép tính dòng tiền bán nhà.</div>
+ <div class="kpi-grid">${kpi("Total outstanding",shortMoney(totalDebt()),"All loans")}${kpi("Allocated debt",shortMoney(allocated),"Linked to properties")}${kpi("Unallocated debt",shortMoney(totalDebt()-allocated),"Needs review")}${kpi("Interest paid",shortMoney(totalInterestPaid()),"Workbook history")}${kpi("Bank debt",shortMoney(state.loans.filter(x=>x.type==="Bank").reduce((s,x)=>s+Number(x.outstanding||0),0)),"Bank")}</div>
+ <div class="section"><div class="table-wrap"><table><thead><tr><th>Loan</th><th>Type</th><th class="money">Outstanding</th><th class="money">Allocated</th><th class="money">Unallocated</th><th></th></tr></thead><tbody>
+ ${state.loans.map(l=>`<tr><td><strong>${escapeHtml(l.name)}</strong></td><td><span class="badge debt">${escapeHtml(l.type)}</span></td><td class="money">${money(l.outstanding)}</td><td class="money">${money(loanAllocated(l))}</td><td class="money">${money(loanUnallocated(l))}</td><td><button class="small-btn" data-allocate-loan="${escapeHtml(l.id)}">Allocate</button></td></tr>`).join("")}
+ </tbody></table></div></div>
+ <div class="section"><h2>Debt by property</h2><div class="table-wrap"><table><thead><tr><th>Property</th><th class="money">Cost basis</th><th class="money">Allocated debt</th><th class="money">Estimated equity at cost</th></tr></thead><tbody>${state.properties.map(p=>`<tr><td>${escapeHtml(p.name)}</td><td class="money">${money(costBasis(p))}</td><td class="money">${money(propertyLoanBalance(p.id))}</td><td class="money">${money(costBasis(p)-propertyLoanBalance(p.id))}</td></tr>`).join("")}</tbody></table></div></div>`;
+ document.querySelectorAll("[data-allocate-loan]").forEach(b=>b.addEventListener("click",()=>openLoanAllocation(b.dataset.allocateLoan)));
+}
+
+function openLoanAllocation(id){
+ const loan=state.loans.find(l=>l.id===id);if(!loan)return;
+ const dialog=document.querySelector("#loanAllocationDialog");
+ const entries=loan.allocations||[];
+ dialog.querySelector("#allocationTitle").textContent="Allocate · "+loan.name;
+ dialog.querySelector("#allocationSummary").textContent="Outstanding "+money(loan.outstanding)+" · Available "+money(loanUnallocated(loan));
+ const select=dialog.querySelector("#allocationProperty");
+ select.innerHTML=state.properties.map(p=>`<option value="${escapeHtml(p.id)}">${escapeHtml(p.name)}</option>`).join("");
+ dialog.querySelector("#allocationAmount").value="";
+ dialog.querySelector("#allocationError").textContent="";
+ const listing=dialog.querySelector("#allocationRows");
+ listing.innerHTML=entries.length?entries.map((a,i)=>`<div class="breakdown-row"><span>${escapeHtml(propName(a.propertyId))}</span><strong>${money(a.amount)}</strong><button type="button" class="small-btn" data-remove-allocation="${i}">Remove</button></div>`).join(""):'<p class="empty">No allocations yet.</p>';
+ listing.querySelectorAll("[data-remove-allocation]").forEach(b=>b.onclick=()=>{
+   loan.allocations.splice(Number(b.dataset.removeAllocation),1);save();renderAll();openLoanAllocation(id);
+ });
+ dialog.querySelector("#allocationForm").onsubmit=e=>{
+   e.preventDefault();
+   const propertyId=select.value,amount=Number(dialog.querySelector("#allocationAmount").value);
+   if(!Number.isSafeInteger(amount)||amount<=0||amount>loanUnallocated(loan)){
+      dialog.querySelector("#allocationError").textContent="Enter a positive whole-VND amount no greater than the unallocated balance.";return;
+   }
+   const existing=loan.allocations.find(a=>a.propertyId===propertyId);
+   if(existing)existing.amount+=amount;else loan.allocations.push({propertyId,amount});
+   save();renderAll();openLoanAllocation(id);
+ };
+ if(!dialog.open)dialog.showModal();
 }
 
 function renderRentals(){
@@ -152,10 +190,10 @@ function openProperty(id){
    <div class="calc-grid">
     <label>Expected sale price<input id="salePrice" type="number" step="1000000" value="${p.market||basis}"></label>
     <label>Selling costs (%)<input id="sellingPct" type="number" step="0.1" value="2"></label>
-    <label>Loan payoff<input id="loanPayoff" type="number" step="1000000" value="${p.debtAllocated||0}"></label>
+    <label>Loan payoff<input id="loanPayoff" type="number" step="1000000" value="${propertyLoanBalance(p.id)}"></label>
     <label>Rental profit to date<input id="rentalProfit" type="number" step="1000000" value="${p.rentalProfit||0}"></label>
    </div>
-   <div class="calc-result" id="calcResult"></div>
+   <p style="margin-top:10px">Loan payoff defaults to allocated debt. Check actual repayment amounts before making decisions; changing the calculator does not update loan records.</p><div class="calc-result" id="calcResult"></div>
   </div>`}
  </div>`;
  document.querySelector("#propertyDialog").showModal();
