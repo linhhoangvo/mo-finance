@@ -124,13 +124,17 @@ const trackedLoans=()=>state.loans.filter(l=>["Chị Tú","Chị Milan"].include
 const totalDebt=()=>trackedLoans().reduce((s,l)=>s+Number(l.outstanding||0),0);
 const totalInterestPaid=()=>trackedLoans().reduce((s,l)=>s+Number(l.interestPaid||0),0);
 
+const vnLabel={
+ Land:"Đất",Legal:"Pháp lý",Construction:"Xây dựng",Wood:"Gỗ",Contractor:"Nhà thầu",Equipment:"Trang thiết bị",Electrical:"Điện",Furniture:"Nội thất",Other:"Chi phí khác",OtherUnclassified:"Chi phí chưa phân loại",TotalInvestment:"Tổng vốn đầu tư",Payroll:"Lương nhân viên","Business registration":"Đăng ký kinh doanh",Renovating:"Đang cải tạo",Operating:"Đang hoạt động",Holding:"Đang nắm giữ",Sold:"Đã bán",House:"Nhà",Project:"Dự án",Bank:"Ngân hàng",Private:"Cá nhân",Equity:"Vốn chủ sở hữu",Debt:"Nợ vay",Expense:"Chi phí",Income:"Thu nhập","Capital Contribution":"Góp vốn","Loan In":"Nhận tiền vay","Loan Repayment":"Trả nợ vay",Transfer:"Chuyển khoản nội bộ",General:"Chi phí chung",Owner:"Chủ đầu tư",Rent:"Tiền thuê"
+};
+const vn=v=>vnLabel[String(v)]||String(v??"");
 function kpi(label,value,sub){return `<div class="card kpi"><div class="kpi-label">${label}</div><div class="kpi-value">${value}</div><div class="kpi-sub">${sub}</div></div>`}
 function statusClass(s){return s.toLowerCase().replace(/\s+/g,"-")}
 function barRow(name,value,total){const pct=total?Math.max(2,value/total*100):0;return `<div class="bar-row"><span>${name}</span><div class="bar"><span style="width:${pct}%"></span></div><strong>${shortMoney(value)}</strong></div>`}
 
 function propertyTable(list=state.properties){
  return `<div class="table-wrap"><table><thead><tr><th>Bất động sản</th><th>Trạng thái</th><th>Vị trí</th><th class="money">Đã trả</th><th class="money">Còn nợ</th><th class="money">Giá vốn</th><th></th></tr></thead><tbody>
- ${list.map(p=>`<tr class="click-row" data-property="${p.id}"><td><strong>${p.name}</strong><br><small>${p.type}</small></td><td><span class="badge ${statusClass(p.status)}">${p.status}</span></td><td>${p.location||"-"}</td><td class="money">${money(p.paid)}</td><td class="money">${money(p.outstanding)}</td><td class="money"><strong>${money(costBasis(p))}</strong></td><td><button class="small-btn" data-property="${p.id}">Xem</button></td></tr>`).join("")}
+ ${list.map(p=>`<tr class="click-row" data-property="${p.id}"><td><strong>${p.name}</strong><br><small>${vn(p.type)}</small></td><td><span class="badge ${statusClass(p.status)}">${vn(p.status)}</span></td><td>${p.location||"-"}</td><td class="money">${money(p.paid)}</td><td class="money">${money(p.outstanding)}</td><td class="money"><strong>${money(costBasis(p))}</strong></td><td><button class="small-btn" data-property="${p.id}">Xem</button></td></tr>`).join("")}
  </tbody></table></div>`;
 }
 
@@ -153,7 +157,7 @@ function renderDashboard(){
  </div>
  <div class="section">
   <div class="section-head"><div><h2>Cơ cấu nguồn vốn</h2><p>Tách Equity và Debt thay vì gộp thành “thu”.</p></div></div>
-  <div class="source-grid">${state.capitalSources.map(s=>`<div class="card source-card"><span>${s.type}</span><strong>${shortMoney(s.amount)}</strong><small>${s.name}</small></div>`).join("")}</div>
+  <div class="source-grid">${state.capitalSources.map(s=>`<div class="card source-card"><span>${vn(s.type)}</span><strong>${shortMoney(s.amount)}</strong><small>${s.name}</small></div>`).join("")}</div>
  </div>`;
  bindPropertyRows();
 }
@@ -301,9 +305,9 @@ function renderReports(){
  activeProps().forEach(p=>Object.entries(p.breakdown||{}).forEach(([k,v])=>categories[k]=(categories[k]||0)+Number(v||0)));
  document.querySelector("#reports").innerHTML=operationsSummary+`
  <div class="two-col">
-  <div class="card chart-card"><h2>Cơ cấu giá vốn</h2><p>Breakdown từ các property có dữ liệu phân loại.</p>${Object.entries(categories).sort((a,b)=>b[1]-a[1]).map(([k,v])=>barRow(k,v,activeCost)).join("")}</div>
+  <div class="card chart-card"><h2>Cơ cấu giá vốn</h2><p>Phân loại chi phí của các bất động sản đang sở hữu.</p>${Object.entries(categories).sort((a,b)=>b[1]-a[1]).map(([k,v])=>barRow(vn(k),v,activeCost)).join("")}</div>
   <div class="card chart-card"><h2>Tổng quan quản trị</h2><p>Những số cần tách riêng</p>
-   <div class="breakdown"><div class="breakdown-row"><span>Vốn chủ đầu tư</span><strong>Equity</strong></div><div class="breakdown-row"><span>Vay ngân hàng / cá nhân</span><strong>Debt</strong></div><div class="breakdown-row"><span>Rental income − operating costs</span><strong>NOI</strong></div><div class="breakdown-row"><span>Sale proceeds − full cost basis</span><strong>Lợi nhuận ròng</strong></div></div>
+   <div class="breakdown"><div class="breakdown-row"><span>Vốn chủ đầu tư</span><strong>Vốn chủ sở hữu</strong></div><div class="breakdown-row"><span>Vay ngân hàng / cá nhân</span><strong>Nợ vay</strong></div><div class="breakdown-row"><span>Thu nhập cho thuê − chi phí vận hành</span><strong>NOI</strong></div><div class="breakdown-row"><span>Doanh thu bán − tổng giá vốn</span><strong>Lợi nhuận ròng</strong></div></div>
   </div>
  </div>`;
 }
@@ -314,7 +318,7 @@ function openProperty(id){
  const basis=costBasis(p);
  const detail=document.querySelector("#propertyDetail");
  detail.innerHTML=`
- <div class="property-head"><div><p class="eyebrow">PROPERTY</p><h2>${p.name}</h2><div class="property-meta"><span class="badge ${statusClass(p.status)}">${p.status}</span><span>${p.type}</span><span>·</span><span>${p.location}</span><span>·</span><span>${p.description||""}</span></div></div><button class="icon-btn" id="closeProperty">×</button></div>
+ <div class="property-head"><div><p class="eyebrow">BẤT ĐỘNG SẢN</p><h2>${p.name}</h2><div class="property-meta"><span class="badge ${statusClass(p.status)}">${vn(p.status)}</span><span>${vn(p.type)}</span><span>·</span><span>${p.location}</span><span>·</span><span>${p.description||""}</span></div></div><button class="icon-btn" id="closeProperty">×</button></div>
  <div class="property-body">
   <div class="detail-grid">
    <div class="mini-card"><span>Giá mua / Đất</span><strong>${money(p.purchase)}</strong></div>
@@ -322,10 +326,10 @@ function openProperty(id){
    <div class="mini-card"><span>Còn phải trả</span><strong>${money(p.outstanding)}</strong></div>
    <div class="mini-card"><span>Tổng giá vốn</span><strong>${money(basis)}</strong></div>
   </div>
-  <div class="section"><div class="section-head"><div><h2>Chi tiết chi phí</h2><p>Phân loại chi phí từ workbook.</p></div></div>
-   <div class="breakdown">${Object.entries(p.breakdown||{}).map(([k,v])=>`<div class="breakdown-row"><span>${k}</span><strong>${money(v)}</strong></div>`).join("")||'<div class="empty">Chưa có chi tiết</div>'}</div>
+  <div class="section"><div class="section-head"><div><h2>Chi tiết chi phí</h2><p>Phân loại chi phí từ bảng tính.</p></div></div>
+   <div class="breakdown">${Object.entries(p.breakdown||{}).map(([k,v])=>`<div class="breakdown-row"><span>${vn(k)}</span><strong>${money(v)}</strong></div>`).join("")||'<div class="empty">Chưa có chi tiết</div>'}</div>
   </div>
-  ${sale?`<div class="calc"><h3>Kết quả bán tài sản</h3><p>Asset already sold.</p><div class="calc-result"><div class="result-box"><span>Giá bán</span><strong>${money(sale.price)}</strong></div><div class="result-box"><span>Cost basis</span><strong>${money(sale.cost)}</strong></div><div class="result-box"><span>Profit</span><strong>${money(sale.profit)}</strong></div><div class="result-box"><span>ROI</span><strong>${(sale.profit/sale.cost*100).toFixed(1)}%</strong></div></div></div>`:
+  ${sale?`<div class="calc"><h3>Kết quả bán tài sản</h3><p>Tài sản đã bán.</p><div class="calc-result"><div class="result-box"><span>Giá bán</span><strong>${money(sale.price)}</strong></div><div class="result-box"><span>Giá vốn</span><strong>${money(sale.cost)}</strong></div><div class="result-box"><span>Lợi nhuận</span><strong>${money(sale.profit)}</strong></div><div class="result-box"><span>ROI</span><strong>${(sale.profit/sale.cost*100).toFixed(1)}%</strong></div></div></div>`:
   `<div class="calc"><h3>Nếu bán hôm nay thì sao?</h3><p>Nhập giá bán dự kiến và chi phí bán để xem tiền thực nhận và lợi nhuận.</p>
    <div class="calc-grid">
     <label>Giá bán dự kiến<input id="salePrice" type="number" step="1000000" value="${p.market||basis}"></label>
@@ -333,7 +337,7 @@ function openProperty(id){
     <label>Tất toán khoản vay<input id="loanPayoff" type="number" step="1000000" value="${propertyLoanBalance(p.id)}"></label>
     <label>Lợi nhuận thuê lũy kế<input id="rentalProfit" type="number" step="1000000" value="${p.rentalProfit||0}"></label>
    </div>
-   <p style="margin-top:10px">Tất toán khoản vay defaults to allocated debt. Cần đối chiếu số tiền tất toán thực tế; điều chỉnh ở đây không thay đổi hồ sơ khoản vay.</p><div class="calc-result" id="calcResult"></div>
+   <p style="margin-top:10px">Số tiền tất toán mặc định bằng dư nợ đã phân bổ. Cần đối chiếu số tiền tất toán thực tế; điều chỉnh ở đây không thay đổi hồ sơ khoản vay.</p><div class="calc-result" id="calcResult"></div>
   </div>`}
  </div>`;
  document.querySelector("#propertyDialog").showModal();
@@ -348,7 +352,7 @@ function updateSaleCalc(p){
  const price=Number(document.querySelector("#salePrice").value||0),pct=Number(document.querySelector("#sellingPct").value||0),loan=Number(document.querySelector("#loanPayoff").value||0),rent=Number(document.querySelector("#rentalProfit").value||0);
  const sellingCosts=price*pct/100, basis=costBasis(p), profit=price-sellingCosts-basis+rent, cashAfterDebt=price-sellingCosts-loan;
  document.querySelector("#calcResult").innerHTML=`
- <div class="result-box"><span>Selling costs</span><strong>${money(sellingCosts)}</strong></div>
+ <div class="result-box"><span>Chi phí bán</span><strong>${money(sellingCosts)}</strong></div>
  <div class="result-box"><span>Tiền còn lại sau trả nợ</span><strong>${money(cashAfterDebt)}</strong></div>
  <div class="result-box"><span>Lợi nhuận dự kiến</span><strong>${money(profit)}</strong></div>
  <div class="result-box"><span>Tỷ suất lợi nhuận trên giá vốn</span><strong>${basis?(profit/basis*100).toFixed(1):"0.0"}%</strong></div>`;
