@@ -253,6 +253,20 @@ function renderChiTietVayChiTu(){
  <tr class="loan-total"><td><strong>Tổng cộng</strong></td><td class="money"><strong>${money(principal)}</strong></td><td class="money">0 ₫</td><td class="money">0 ₫</td><td class="money"><strong>${money(interest)}</strong></td><td class="money"><strong>${money(interest)}</strong></td></tr>
  </tbody></table></div><p style="color:var(--muted);font-size:12px;margin-top:9px">Ngày lập bảng sao kê chưa được cung cấp; số lãi đến hạn là số tại thời điểm chụp ảnh, không phải số dư lãi hiện tại.</p></div>`;
 }
+const chiTietVayChiMilan=[
+ [1000000000,6753424],[800000000,5402740],[500000000,3376712],
+ [995000000,6719657],[2800000000,17605480],[900000000,6078082],
+ [500000000,3376712],[295000000,1992260]
+];
+function renderChiTietVayChiMilan(){
+ const principal=chiTietVayChiMilan.reduce((n,r)=>n+r[0],0);
+ const interest=chiTietVayChiMilan.reduce((n,r)=>n+r[1],0);
+ return `<div class="section"><div class="section-head"><div><h2>Chi tiết khoản vay Chị Milan</h2><p>8 khoản dư nợ theo ảnh sao kê bạn cung cấp. Lãi đến hạn không phải lãi đã thanh toán.</p></div></div>
+ <div class="table-wrap"><table><thead><tr><th>Khoản</th><th class="money">Dư nợ gốc</th><th class="money">Gốc đến hạn</th><th class="money">Gốc quá hạn</th><th class="money">Lãi đến hạn</th><th class="money">Tổng phải thu</th></tr></thead><tbody>
+ ${chiTietVayChiMilan.map((r,i)=>`<tr><td>Khoản ${i+1}</td><td class="money">${money(r[0])}</td><td class="money">0 ₫</td><td class="money">0 ₫</td><td class="money">${money(r[1])}</td><td class="money">${money(r[1])}</td></tr>`).join("")}
+ <tr class="loan-total"><td><strong>Tổng cộng</strong></td><td class="money"><strong>${money(principal)}</strong></td><td class="money">0 ₫</td><td class="money">0 ₫</td><td class="money"><strong>${money(interest)}</strong></td><td class="money"><strong>${money(interest)}</strong></td></tr>
+ </tbody></table></div><p style="color:var(--muted);font-size:12px;margin-top:9px">Ngày lập bảng sao kê chưa được cung cấp; số lãi đến hạn là số tại thời điểm chụp ảnh, không phải số dư lãi hiện tại.</p></div>`;
+}
 function renderLoans(){
  const allocated=trackedLoans().reduce((v,l)=>v+loanAllocated(l),0);
  document.querySelector("#loans").innerHTML=`
@@ -261,7 +275,7 @@ function renderLoans(){
  <div class="section"><div class="table-wrap"><table><thead><tr><th>Khoản vay</th><th>Loại</th><th class="money">Còn nợ</th><th class="money">Đã phân bổ</th><th class="money">Chưa phân bổ</th><th></th></tr></thead><tbody>
  ${trackedLoans().map(l=>`<tr><td><strong>${escapeHtml(l.name)}</strong></td><td><span class="badge debt">${escapeHtml(l.type)}</span></td><td class="money">${money(l.outstanding)}</td><td class="money">${money(loanAllocated(l))}</td><td class="money">${money(loanUnallocated(l))}</td><td><button class="small-btn" data-allocate-loan="${escapeHtml(l.id)}">Phân bổ</button></td></tr>`).join("")}
  </tbody></table></div></div>
- <div class="section"><h2>Dư nợ theo tài sản</h2><div class="table-wrap"><table><thead><tr><th>Bất động sản</th><th class="money">Giá vốn</th><th class="money">Nợ đã phân bổ</th><th class="money">Vốn chủ sở hữu theo giá vốn</th></tr></thead><tbody>${state.properties.map(p=>`<tr><td>${escapeHtml(p.name)}</td><td class="money">${money(costBasis(p))}</td><td class="money">${money(propertyLoanBalance(p.id))}</td><td class="money">${money(costBasis(p)-propertyLoanBalance(p.id))}</td></tr>`).join("")}</tbody></table></div></div>${renderChiTietVayChiTu()}`;
+ <div class="section"><h2>Dư nợ theo tài sản</h2><div class="table-wrap"><table><thead><tr><th>Bất động sản</th><th class="money">Giá vốn</th><th class="money">Nợ đã phân bổ</th><th class="money">Vốn chủ sở hữu theo giá vốn</th></tr></thead><tbody>${state.properties.map(p=>`<tr><td>${escapeHtml(p.name)}</td><td class="money">${money(costBasis(p))}</td><td class="money">${money(propertyLoanBalance(p.id))}</td><td class="money">${money(costBasis(p)-propertyLoanBalance(p.id))}</td></tr>`).join("")}</tbody></table></div></div>${renderChiTietVayChiTu()}${renderChiTietVayChiMilan()}`;
  document.querySelectorAll("[data-allocate-loan]").forEach(b=>b.addEventListener("click",()=>openLoanAllocation(b.dataset.allocateLoan)));
 }
 
