@@ -268,15 +268,15 @@ function renderChiTietVayChiMilan(){
  </tbody></table></div><p style="color:var(--muted);font-size:12px;margin-top:9px">Ngày lập bảng sao kê chưa được cung cấp; số lãi đến hạn là số tại thời điểm chụp ảnh, không phải số dư lãi hiện tại.</p></div>`;
 }
 function renderLoans(){
- const allocated=trackedLoans().reduce((v,l)=>v+loanAllocated(l),0);
+ const loans=trackedLoans();
  document.querySelector("#loans").innerHTML=`
- <div class="note">Phân bổ dư nợ cho từng tài sản bằng nút <strong>Phân bổ</strong>. Đây là phân bổ phục vụ quản trị, không làm thay đổi tổng nợ. Phần chưa gắn tài sản sẽ không được tự động đưa vào phép tính dòng tiền bán nhà.</div>
- <div class="kpi-grid">${kpi("Tổng dư nợ",shortMoney(totalDebt()),"Tất cả khoản vay")}${kpi("Nợ đã phân bổ",shortMoney(allocated),"Đã gắn với tài sản")}${kpi("Nợ chưa phân bổ",shortMoney(totalDebt()-allocated),"Cần kiểm tra")}${kpi("Lãi đã trả",shortMoney(totalInterestPaid()),"Lịch sử bảng tính")}${kpi("Nợ ngân hàng",shortMoney(trackedLoans().filter(x=>x.type==="Bank").reduce((s,x)=>s+Number(x.outstanding||0),0)),"Bank")}</div>
- <div class="section"><div class="table-wrap"><table><thead><tr><th>Khoản vay</th><th>Loại</th><th class="money">Còn nợ</th><th class="money">Đã phân bổ</th><th class="money">Chưa phân bổ</th><th></th></tr></thead><tbody>
- ${trackedLoans().map(l=>`<tr><td><strong>${escapeHtml(l.name)}</strong></td><td><span class="badge debt">${escapeHtml(l.type)}</span></td><td class="money">${money(l.outstanding)}</td><td class="money">${money(loanAllocated(l))}</td><td class="money">${money(loanUnallocated(l))}</td><td><button class="small-btn" data-allocate-loan="${escapeHtml(l.id)}">Phân bổ</button></td></tr>`).join("")}
- </tbody></table></div></div>
- <div class="section"><h2>Dư nợ theo tài sản</h2><div class="table-wrap"><table><thead><tr><th>Bất động sản</th><th class="money">Giá vốn</th><th class="money">Nợ đã phân bổ</th><th class="money">Vốn chủ sở hữu theo giá vốn</th></tr></thead><tbody>${state.properties.map(p=>`<tr><td>${escapeHtml(p.name)}</td><td class="money">${money(costBasis(p))}</td><td class="money">${money(propertyLoanBalance(p.id))}</td><td class="money">${money(costBasis(p)-propertyLoanBalance(p.id))}</td></tr>`).join("")}</tbody></table></div></div>${renderChiTietVayChiTu()}${renderChiTietVayChiMilan()}`;
- document.querySelectorAll("[data-allocate-loan]").forEach(b=>b.addEventListener("click",()=>openLoanAllocation(b.dataset.allocateLoan)));
+ <div class="kpi-grid loan-summary">
+  ${kpi("Tổng dư nợ ngân hàng",money(totalDebt()),"Chị Tú và Chị Milan")}
+  ${loans.map(l=>kpi("Dư nợ "+l.name,money(l.outstanding),"Khoản vay ngân hàng")).join("")}
+ </div>
+ ${renderChiTietVayChiTu()}
+ ${renderChiTietVayChiMilan()}
+ `;
 }
 
 function openLoanAllocation(id){
