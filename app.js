@@ -2,13 +2,14 @@ const seed = {
   version: 2,
   cashHeld: 1674144215,
   properties: [
-    {id:"mo-sen",name:"Mô Sen",type:"House",status:"Renovating",location:"Cẩm Hà, Hội An",description:"120m² · mặt tiền 6m · view lúa & sen",purchase:3440000000,paid:4746296035,outstanding:255000000,market:0,rentalProfit:0,debtAllocated:0,breakdown:{Land:3440000000,Legal:6364765,Construction:514431270,Wood:100000000,Contractor:685500000}},
+    {id:"mo-sen",name:"Mô Sen",type:"House",status:"Renovating",location:"Cẩm Hà, Hội An",description:"120m² · mặt tiền 6m · view lúa & sen",purchase:3440000000,paid:4753803639,outstanding:255000000,market:0,rentalProfit:0,debtAllocated:0,breakdown:{Land:3440000000,Legal:13872369,Construction:514431270,Wood:100000000,Contractor:685500000}},
     {id:"mo-trau",name:"Mô Trầu",type:"House",status:"Operating",location:"Cẩm Châu, Hội An",description:"152.7m² · mặt tiền 5m · view hậu lúa",purchase:3950000000,paid:5480407315,outstanding:175000000,market:0,rentalProfit:0,debtAllocated:0,breakdown:{Land:3950000000,Legal:34920409,Equipment:576486907,Wood:70000000,Contractor:848999999}},
     {id:"mo-dua",name:"Mô Dừa",type:"Land",status:"Holding",location:"Thanh Nam, Cẩm Châu",description:"Thửa đất số 99",purchase:1999000000,paid:2010283869,outstanding:0,market:0,rentalProfit:0,debtAllocated:0,breakdown:{Land:1999000000,Legal:11283869}},
     {id:"mo-xanh",name:"Mô Xanh",type:"Land",status:"Holding",location:"Hội An",description:"Đất đầu tư",purchase:3200000000,paid:3209500000,outstanding:0,market:0,rentalProfit:0,debtAllocated:0,breakdown:{Land:3200000000,Legal:9500000}},
     {id:"mo-lua-1",name:"Mô Lúa 1",type:"Land",status:"Holding",location:"Hội An",description:"Đất Mô Lúa 1",purchase:2150000000,paid:2214789111,outstanding:0,market:0,rentalProfit:0,debtAllocated:0,breakdown:{Land:2150000000,Legal:34789111,Construction:30000000}},
     {id:"mo-lua-moi",name:"Mô Lúa mới",type:"Land",status:"Holding",location:"Hội An",description:"Đất Mô Lúa mới",purchase:2300000000,paid:2328551000,outstanding:0,market:0,rentalProfit:0,debtAllocated:0,breakdown:{Land:2300000000,Legal:28551000}},
     {id:"mo-tuoi-dat",name:"Mô Tươi Đất",type:"Land",status:"Holding",location:"An Mỹ, Cẩm Châu, Hội An",description:"Đất Mô Tươi",purchase:3000000000,paid:3010220250,outstanding:0,market:0,rentalProfit:0,debtAllocated:0,breakdown:{Land:3000000000,Legal:10220250}},
+    {id:"nuong-om",name:"Nương Ôm",type:"Project",status:"Operating",location:"Hội An",description:"Dự án Nương Ôm",purchase:0,paid:1266560000,outstanding:0,market:0,rentalProfit:0,debtAllocated:0,breakdown:{TotalInvestment:1266560000}},
     {id:"mo-kim",name:"Mô Kim",type:"Land",status:"Sold",location:"Hội An",description:"Đã bán",purchase:2825000000,paid:2897490000,outstanding:0,market:4050000000,rentalProfit:0,debtAllocated:0,breakdown:{Land:2825000000,Legal:56890000,Construction:3600000,Other:12000000}},
     {id:"mo-tuoi-nha",name:"Mô Tươi Nhà",type:"House",status:"Sold",location:"An Mỹ, Cẩm Châu",description:"Nhà cho thuê 6 căn hộ · 171.2m²",purchase:0,paid:8184124126,outstanding:0,market:9500000000,rentalProfit:0,debtAllocated:0,breakdown:{TotalInvestment:8184124126}}
   ],
@@ -41,6 +42,18 @@ const shortMoney=n=>{const v=Number(n||0);if(Math.abs(v)>=1e9)return (v/1e9).toF
 const storageKey="moFinanceDataV2";
 const state=JSON.parse(localStorage.getItem(storageKey)||"null")||structuredClone(seed);
 const save=()=>localStorage.setItem(storageKey,JSON.stringify(state));
+const verifiedSen=state.properties.find(p=>p.id==="mo-sen");
+if(verifiedSen && Number(verifiedSen.paid)===4746296035){
+ verifiedSen.paid=4753803639;
+ verifiedSen.breakdown=verifiedSen.breakdown||{};
+ verifiedSen.breakdown.Legal=Number(verifiedSen.breakdown.Legal||0)+7507604;
+ save();
+}
+if(!state.properties.some(p=>p.id==="nuong-om")){
+ state.properties.push(structuredClone(seed.properties.find(p=>p.id==="nuong-om")));
+ save();
+}
+
 // Split the old combined land portfolio only when it still matches the verified workbook.
 const oldLand=state.properties.find(p=>p.id==="mo-lua");
 if(oldLand&&Number(oldLand.paid)===7553560361&&Number(oldLand.outstanding||0)===0){
@@ -264,10 +277,18 @@ function renderSales(){
 }
 
 function renderReports(){
+ const moLuaProps=state.properties.filter(p=>["mo-lua-1","mo-lua-moi"].includes(p.id));
+ const moLuaTotal=moLuaProps.reduce((n,p)=>n+Number(p.paid||0),0);
+ const operationsSummary=`<div class="section"><div class="section-head"><div><h2>Nhóm Mô Lúa và chi phí vận hành</h2><p>Mô Lúa gồm Mô Lúa 1, Mô Lúa 2 và Mô Lúa 3. Các lô chưa xác định rõ giá trị được để chờ đối chiếu.</p></div></div><div class="breakdown card" style="padding:18px">
+ <div class="breakdown-row"><span>Mô Lúa – phần đã xác định (Mô Lúa 1 + Mô Lúa mới)</span><strong>${money(moLuaTotal)}</strong></div>
+ <div class="breakdown-row"><span>Nương Ôm – giá trị ghi nhận</span><strong>${money(state.properties.find(p=>p.id==="nuong-om")?.paid||0)}</strong></div>
+ <div class="breakdown-row"><span>Lương nhân viên – tổng theo bảng đối chiếu</span><strong>${money(289550000)}</strong></div>
+ </div></div>`;
+
  const activeCost=activeProps().reduce((s,p)=>s+costBasis(p),0);
  const categories={};
  activeProps().forEach(p=>Object.entries(p.breakdown||{}).forEach(([k,v])=>categories[k]=(categories[k]||0)+Number(v||0)));
- document.querySelector("#reports").innerHTML=`
+ document.querySelector("#reports").innerHTML=operationsSummary+`
  <div class="two-col">
   <div class="card chart-card"><h2>Cơ cấu giá vốn</h2><p>Breakdown từ các property có dữ liệu phân loại.</p>${Object.entries(categories).sort((a,b)=>b[1]-a[1]).map(([k,v])=>barRow(k,v,activeCost)).join("")}</div>
   <div class="card chart-card"><h2>Tổng quan quản trị</h2><p>Những số cần tách riêng</p>
