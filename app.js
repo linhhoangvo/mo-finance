@@ -309,24 +309,28 @@ function renderSales(){
 }
 
 function renderReports(){
- const moLuaProps=state.properties.filter(p=>["mo-lua-1","mo-lua-moi"].includes(p.id));
- const moLuaTotal=moLuaProps.reduce((n,p)=>n+Number(p.paid||0),0);
- const operationsSummary=`<div class="section"><div class="section-head"><div><h2>Nhóm Mô Lúa và chi phí vận hành</h2><p>Mô Lúa gồm Mô Lúa 1, Mô Lúa 2 và Mô Lúa 3. Các lô chưa xác định rõ giá trị được để chờ đối chiếu.</p></div></div><div class="breakdown card" style="padding:18px">
- <div class="breakdown-row"><span>Mô Lúa – phần đã xác định (Mô Lúa 1 + Mô Lúa mới)</span><strong>${money(moLuaTotal)}</strong></div>
- <div class="breakdown-row"><span>Nương Ôm – giá trị ghi nhận</span><strong>${money(state.properties.find(p=>p.id==="nuong-om")?.paid||0)}</strong></div>
- <div class="breakdown-row"><span>Lương nhân viên – tổng theo bảng đối chiếu</span><strong>${money(289550000)}</strong></div>
- </div></div>`;
-
- const activeCost=activeProps().reduce((s,p)=>s+costBasis(p),0);
- const categories={};
- activeProps().forEach(p=>Object.entries(p.breakdown||{}).forEach(([k,v])=>categories[k]=(categories[k]||0)+Number(v||0)));
- document.querySelector("#reports").innerHTML=operationsSummary+`
- <div class="two-col">
-  <div class="card chart-card"><h2>Cơ cấu giá vốn</h2><p>Phân loại chi phí của các bất động sản đang sở hữu.</p>${Object.entries(categories).sort((a,b)=>b[1]-a[1]).map(([k,v])=>barRow(vn(k),v,activeCost)).join("")}</div>
-  <div class="card chart-card"><h2>Tổng quan quản trị</h2><p>Những số cần tách riêng</p>
-   <div class="breakdown"><div class="breakdown-row"><span>Vốn chủ đầu tư</span><strong>Vốn chủ sở hữu</strong></div><div class="breakdown-row"><span>Vay ngân hàng / cá nhân</span><strong>Nợ vay</strong></div><div class="breakdown-row"><span>Thu nhập cho thuê − chi phí vận hành</span><strong>NOI</strong></div><div class="breakdown-row"><span>Doanh thu bán − tổng giá vốn</span><strong>Lợi nhuận ròng</strong></div></div>
-  </div>
- </div>`;
+ const byId=id=>state.properties.find(p=>p.id===id);
+ const paid=id=>Number(byId(id)?.paid||0);
+ const moLua=paid("mo-lua-1")+paid("mo-lua-moi");
+ const bankFees=state.transactions.filter(t=>t.type==="Expense"&&String(t.project||"").trim().toLocaleLowerCase("vi")==="phí ngân hàng").reduce((sum,t)=>sum+Number(t.amount||0),0);
+ const lines=[
+  {name:"Mô Trầu",value:paid("mo-trau")},
+  {name:"Mô Sen",value:paid("mo-sen")},
+  {name:"Mô Tươi Đất",value:paid("mo-tuoi-dat")},
+  {name:"Mô Lúa",value:moLua,detail:"Gồm Mô Lúa 1 và Mô Lúa mới đã có số liệu; Mô Lúa 2, 3 chờ đối chiếu"},
+  {name:"Mô Dừa",value:paid("mo-dua")},
+  {name:"Mô Kim",value:paid("mo-kim")},
+  {name:"Mô Xanh",value:paid("mo-xanh")},
+  {name:"Nương Ôm",value:paid("nuong-om")},
+  {name:"Lương nhân viên",value:289550000,detail:"Tổng hợp theo bảng đối chiếu, không cộng lại từ từng giao dịch"},
+  {name:"Phí ngân hàng",value:bankFees,detail:"Tổng các dòng chi có Dự án / Khoản mục là Phí ngân hàng trong sheet Tổng"}
+ ];
+ document.querySelector("#reports").innerHTML=`
+ <div class="section-head"><div><h2>Báo cáo chi phí tổng hợp</h2><p>Theo danh mục bạn chọn. Giá trị tài sản là tổng đã thanh toán, không cộng công nợ chưa trả.</p></div></div>
+ <div class="table-wrap"><table><thead><tr><th>Khoản mục</th><th class="money">Số tiền đã ghi nhận</th></tr></thead><tbody>
+ ${lines.map(x=>`<tr><td><strong>${escapeHtml(x.name)}</strong>${x.detail?`<div style="font-size:11px;color:var(--muted);margin-top:4px">${escapeHtml(x.detail)}</div>`:""}</td><td class="money">${money(x.value)}</td></tr>`).join("")}
+ </tbody></table></div>
+ <p style="font-size:12px;color:var(--muted);margin-top:12px">Mô Tươi Nhà không nằm trong danh mục báo cáo này. Lương nhân viên và phí ngân hàng được theo dõi riêng, không tính vào tổng giá vốn tài sản.</p>`;
 }
 
 // Bảng chi tiết chỉ dùng để đối chiếu, không tự cộng lại vào giá vốn đã tổng hợp.
