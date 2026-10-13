@@ -41,3 +41,60 @@ dialog{border:0;border-radius:18px;padding:0;max-width:680px;width:calc(100% - 3
 
 /* V4: transaction finder and monthly calendar */
 .tx-controls{display:flex;align-items:end;flex-wrap:wrap;gap:12px;margin:14px 0}.tx-controls label{display:grid;gap:6px;color:var(--muted);font-size:12px;font-weight:700}.tx-controls input,.tx-controls select,.calendar-toolbar input,.calendar-toolbar select{border:1px solid var(--line);border-radius:9px;padding:10px;background:white;color:var(--text);min-width:145px}.tx-controls input{min-width:220px}.tx-totals,.calendar-summary{display:flex;flex-wrap:wrap;gap:10px 24px;background:white;border:1px solid var(--line);padding:14px 18px;border-radius:12px;margin:14px 0;font-size:13px}.calendar-toolbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:16px 0}.calendar-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}.calendar-weekday{text-align:center;font-size:12px;color:var(--muted);font-weight:700;padding:8px}.calendar-day{font:inherit;text-align:left;display:flex;flex-direction:column;gap:7px;align-items:flex-start;min-height:110px;border:1px solid var(--line);border-radius:10px;background:#fff;padding:10px;cursor:pointer;color:var(--text);min-width:0}.calendar-day:hover{border-color:var(--accent)}.calendar-day.has-entries{background:#f1f5ef}.calendar-day.muted-day{background:transparent;border-color:transparent;cursor:default}.calendar-number{font-weight:800}.calendar-day small{font-size:11px;color:var(--muted)}.calendar-expense{font-size:12px;color:var(--danger);overflow-wrap:anywhere}.calendar-income{font-size:12px;color:var(--accent);overflow-wrap:anywhere}.calendar-details{margin-top:14px;padding:18px}.calendar-details h3{margin:0 0 12px}@media(max-width:700px){.calendar-grid{gap:2px}.calendar-day{min-height:78px;padding:5px;gap:5px}.calendar-day small,.calendar-expense,.calendar-income{font-size:9px}.calendar-weekday{font-size:10px;padding:3px}.tx-controls label,.tx-controls input,.tx-controls select{width:100%}}
+
+/* V5 · Soft editorial finance design */
+:root{
+ --bg:#f8f7f2;--surface:#fffefa;--text:#29392f;--muted:#7e897e;--line:#e7ebe2;
+ --accent:#5f826d;--accent-soft:#edf3e9;--danger:#ab716b;--warning:#a98551;
+ --shadow:0 24px 65px rgba(48,65,49,.14)
+}
+html{scroll-behavior:smooth}
+body{background:radial-gradient(circle at 85% 0%,#eef3e8 0,transparent 38%),var(--bg);font-family:"Be Vietnam Pro",Inter,system-ui,sans-serif;line-height:1.55}
+.sidebar{background:linear-gradient(175deg,#f0f3e9,#e6ede2 78%,#e1e9df);color:#385143;border-right:1px solid #dce6db;padding:34px 18px}
+.brand{padding:0 10px 22px;border-bottom:1px solid #d5e1d4;margin-bottom:24px;gap:13px}
+.brand-mark{width:46px;height:46px;border-radius:16px;background:#678674;color:#fff;font-family:Georgia,serif;font-size:26px;font-weight:500;box-shadow:0 8px 18px #577c6430}
+.brand strong{font-family:Georgia,"Times New Roman",serif;font-size:21px;letter-spacing:-.035em;font-weight:600}
+.brand small{color:#829489;font-size:10px;letter-spacing:.04em}
+nav{gap:5px}.nav-item{font-size:13px;color:#657a6a;padding:13px 16px;border-radius:13px;font-weight:550;transition:background .18s,transform .18s,color .18s}
+.nav-item:hover{background:#dce8d9;color:#315b43;transform:translateX(2px)}
+.nav-item.active{background:#fffefa;color:#385d48;box-shadow:0 4px 18px #49645113;font-weight:750}
+.sidebar-footer{color:#93a297;font-size:12px}
+main{padding:42px clamp(20px,3.5vw,64px) 70px;max-width:1750px}
+.topbar{padding-bottom:23px;margin-bottom:25px;border-bottom:1px solid #e5e9df}
+.eyebrow{color:#8c9b8b;letter-spacing:.18em;font-size:10px}
+.topbar h1{font-family:Georgia,"Times New Roman",serif;font-weight:500;font-size:clamp(29px,3vw,40px);letter-spacing:-.04em;color:#354e3d}
+.primary,.ghost,.small-btn{border-radius:999px;padding:11px 19px;transition:transform .18s,box-shadow .18s,background .18s}
+.primary{background:#668b75;box-shadow:0 9px 22px #537d6028;font-weight:650}
+.primary:hover{background:#4d755e;transform:translateY(-2px);box-shadow:0 13px 24px #537d6033}
+.ghost{background:#edf2e9;color:#4d745e}.ghost:hover,.small-btn:hover{background:#e0eddf}
+.small-btn{background:#edf4ed;font-size:12px}
+.card,.table-wrap{border-radius:22px;border-color:#e9ede5;box-shadow:0 7px 30px rgba(51,70,53,.035)}
+.card{background:#fffefa}.kpi-grid{gap:15px}.kpi{padding:24px 21px;min-height:151px;position:relative;overflow:hidden}
+.kpi:before{content:"";position:absolute;left:22px;top:0;width:30px;height:3px;border-radius:0 0 6px 6px;background:#bdd0bd}
+.kpi-value{font-weight:650;font-size:clamp(20px,1.8vw,28px);color:#385b47;letter-spacing:-.04em}
+.kpi-label{font-size:12px;color:#7c8c7c}.kpi-sub{font-size:11px;color:#93a094}
+.section{margin-top:29px}.section-head{margin-bottom:14px}.section h2,.chart-card h2{font-family:Georgia,"Times New Roman",serif;font-size:21px;font-weight:500;color:#405747;letter-spacing:-.02em}
+.section p,.chart-card p{line-height:1.7}
+.chart-card{padding:25px}.two-col{gap:20px}.source-grid{gap:15px}
+.source-card{padding:21px}.source-card strong{font-size:23px;color:#446a52;font-weight:650}
+.table-wrap{background:#fffefa}th{background:#f5f7f0;color:#879487;font-size:10px;letter-spacing:.07em;font-weight:750}
+td{font-size:12.5px;color:#435449}th,td{padding:16px 17px;border-bottom:1px solid #eff1eb}
+tbody tr:hover td{background:#f5f8f2}.money{font-weight:600;color:#405b48;font-variant-numeric:tabular-nums}
+.badge{background:#eaf3e9;color:#4e7a5d;font-weight:600;padding:6px 10px}
+.badge.sold{background:#f0f0eb;color:#798078}.badge.renovating{background:#f7eedf;color:#a07a44}.badge.debt{background:#fbede9;color:#aa766c}
+.note{border:1px solid #e6e9da;background:#f6f6ec;color:#6e795e;border-radius:16px;padding:17px 20px;line-height:1.7}
+.bar{height:7px;background:#edf1ea}.bar>span{background:linear-gradient(90deg,#86aa8d,#5d856d)}
+.bar-row{margin:16px 0}
+dialog{background:#fffefa;border:1px solid #e7ede3;border-radius:26px}
+dialog::backdrop{background:rgba(24,42,30,.35);backdrop-filter:blur(5px)}
+.dialog-head h2,.property-head h2{font-family:Georgia,serif;color:#365641;font-size:28px;font-weight:500}
+.form-grid input,.form-grid select,.calc-grid input,.tx-controls input,.tx-controls select{border:1px solid #dfe8dd;background:#fcfdfa;border-radius:13px;min-height:42px;outline-color:#8bae98}
+.form-grid input:focus,.form-grid select:focus,.calc-grid input:focus,.tx-controls input:focus,.tx-controls select:focus{border-color:#83a68b;box-shadow:0 0 0 3px #8bae9826}
+.mini-card,.calc{background:#f7f9f4;border-color:#e5ece1;border-radius:17px}
+.result-box{background:#eaf1e8;border-radius:16px}.result-box strong{color:#3e684d}
+.tx-controls{gap:15px}.tx-totals{border-radius:17px;background:#f7f9f5}.breakdown-row{padding:13px 0}
+button:focus-visible{outline:3px solid #9dbfa5;outline-offset:3px}
+@media(max-width:1050px){.two-col{grid-template-columns:1fr}.sidebar{padding:25px 12px}.kpi{min-height:135px}}
+@media(max-width:760px){.sidebar{padding:14px 15px;background:#eaf0e6}.brand{margin:0 0 12px;padding:0 0 12px}.sidebar nav{padding-bottom:4px;gap:4px}.nav-item{font-size:12px;padding:10px 13px}.nav-item:hover{transform:none}main{padding:23px 15px 50px}.topbar{gap:12px;align-items:center}.topbar h1{font-size:29px}.topbar .primary{font-size:12px;padding:11px 13px}.kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.kpi{min-height:120px;padding:19px 14px}.kpi-value{font-size:20px}.kpi-label{font-size:11px}.kpi-sub{font-size:10px}.section h2{font-size:20px}.source-grid{grid-template-columns:1fr}.detail-grid,.calc-grid,.calc-result{grid-template-columns:repeat(2,minmax(0,1fr))}.mini-card strong{font-size:14px}td,th{padding:12px}.tx-controls input{min-width:0}dialog{max-height:90vh;overflow-y:auto}}
+@media(max-width:390px){.kpi-grid{grid-template-columns:1fr}.topbar{align-items:flex-start;flex-direction:column}.detail-grid,.calc-grid,.calc-result{grid-template-columns:1fr}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{scroll-behavior:auto!important;transition:none!important}}
