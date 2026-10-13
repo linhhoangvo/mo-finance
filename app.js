@@ -3,7 +3,7 @@ const seed = {
   cashHeld: 1674144215,
   properties: [
     {id:"mo-sen",name:"Mô Sen",type:"House",status:"Renovating",location:"Cẩm Hà, Hội An",description:"120m² · mặt tiền 6m · view lúa & sen",purchase:3440000000,paid:4746296035,outstanding:255000000,market:0,rentalProfit:0,debtAllocated:0,breakdown:{Land:3440000000,Legal:6364765,Construction:514431270,Wood:100000000,Contractor:685500000}},
-    {id:"mo-trau",name:"Mô Trầu",type:"House",status:"Operating",location:"Cẩm Châu, Hội An",description:"152.7m² · mặt tiền 5m · view hậu lúa",purchase:3950000000,paid:5480407315,outstanding:175000000,market:0,rentalProfit:0,debtAllocated:0,breakdown:{Land:3950000000,Legal:26920409,Equipment:576486907,Wood:70000000,Contractor:848999999}},
+    {id:"mo-trau",name:"Mô Trầu",type:"House",status:"Operating",location:"Cẩm Châu, Hội An",description:"152.7m² · mặt tiền 5m · view hậu lúa",purchase:3950000000,paid:5480407315,outstanding:175000000,market:0,rentalProfit:0,debtAllocated:0,breakdown:{Land:3950000000,Legal:34920409,Equipment:576486907,Wood:70000000,Contractor:848999999}},
     {id:"mo-dua",name:"Mô Dừa",type:"Land",status:"Holding",location:"Thanh Nam, Cẩm Châu",description:"Thửa đất số 99",purchase:1999000000,paid:2010283869,outstanding:0,market:0,rentalProfit:0,debtAllocated:0,breakdown:{Land:1999000000,Legal:11283869}},
     {id:"mo-xanh",name:"Mô Xanh",type:"Land",status:"Holding",location:"Hội An",description:"Đất đầu tư",purchase:3200000000,paid:3209500000,outstanding:0,market:0,rentalProfit:0,debtAllocated:0,breakdown:{Land:3200000000,Legal:9500000}},
     {id:"mo-lua",name:"Mô Lúa",type:"Land",status:"Holding",location:"Hội An",description:"Danh mục đất Mô Lúa",purchase:7450000000,paid:7553560361,outstanding:0,market:0,rentalProfit:0,debtAllocated:0,breakdown:{Land:7450000000,Legal:73560361,Other:30000000}},
@@ -39,6 +39,7 @@ const shortMoney=n=>{const v=Number(n||0);if(Math.abs(v)>=1e9)return (v/1e9).toF
 const storageKey="moFinanceDataV2";
 const state=JSON.parse(localStorage.getItem(storageKey)||"null")||structuredClone(seed);
 const save=()=>localStorage.setItem(storageKey,JSON.stringify(state));
+// Mô Trầu: tab Mô Trầu base 5,472,407,315 + tab Tổng row 588 legal 8,000,000.
 const moTrau=state.properties.find(p=>p.id==="mo-trau");
 if(moTrau&&Number(moTrau.paid)===5472407315){
   moTrau.paid=5480407315;
@@ -47,6 +48,7 @@ if(moTrau&&Number(moTrau.paid)===5472407315){
 
 // Incremental source-sheet import. Fixed source-row IDs make reloading idempotent.
 const sheetUpdates=[
+ {row:588,date:"2026-09-19",property:"mo-trau",category:"Legal",description:"Mô Trầu chuyển khoản làm giấy tờ",amount:8000000},
  {row:602,date:"2026-09-11",property:"general",category:"Payroll",description:"Chi phí lương Cam",amount:239000000},
 
  {row:592,date:"2026-10-02",property:"mo-sen",category:"Legal",description:"Làm sổ + đóng thuế đưa nhà vào sổ nhà Sen",amount:1021930},
@@ -64,6 +66,10 @@ for(const t of sheetUpdates){
   state.transactions.push({id,date:t.date,property:t.property,type:"Expense",category:t.category,description:t.description,amount:t.amount,source:"Google Sheets · Tổng · row "+t.row});
   sheetChanged=true;
  }
+}
+if(moTrau&&Number(moTrau.breakdown?.Legal)===26920409){
+ moTrau.breakdown.Legal=34920409;
+ localStorage.setItem(storageKey,JSON.stringify(state));
 }
 if(sheetChanged)localStorage.setItem(storageKey,JSON.stringify(state));
 
