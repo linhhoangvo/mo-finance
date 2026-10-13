@@ -105,3 +105,5 @@ html,body,button,input,select,textarea,table,dialog{font-family:var(--font-vn)}
 .brand strong,.topbar h1,.section h2,.chart-card h2,.dialog-head h2,.property-head h2{font-family:var(--font-vn);font-weight:650;letter-spacing:-.025em}
 .brand-mark{font-family:var(--font-vn);font-weight:750}
 body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+
+.property-ledger .table-wrap{max-height:420px;overflow:auto}.property-ledger table{min-width:660px}.property-ledger td:nth-child(2){min-width:240px;white-space:normal}.property-ledger th{position:sticky;top:0;z-index:1}.property-ledger .tx-totals{margin:12px 0}
