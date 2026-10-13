@@ -198,8 +198,8 @@ function renderLoans(){
 function openLoanAllocation(id){
  const loan=state.loans.find(l=>l.id===id);if(!loan)return;
  const dialog=document.querySelector("#loanAllocationDialog");
- const giao dịch=loan.allocations||[];
- dialog.querySelector("#allocationTitle").textContent="Allocate · "+loan.name;
+ const entries=loan.allocations||[];
+ dialog.querySelector("#allocationTitle").textContent="Phân bổ · "+loan.name;
  dialog.querySelector("#allocationSummary").textContent="Dư nợ "+money(loan.outstanding)+" · Có thể phân bổ "+money(loanUnallocated(loan));
  const select=dialog.querySelector("#allocationProperty");
  select.innerHTML=state.properties.map(p=>`<option value="${escapeHtml(p.id)}">${escapeHtml(p.name)}</option>`).join("");
