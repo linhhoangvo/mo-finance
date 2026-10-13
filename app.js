@@ -6,7 +6,9 @@ const seed = {
     {id:"mo-trau",name:"Mô Trầu",type:"House",status:"Operating",location:"Cẩm Châu, Hội An",description:"152.7m² · mặt tiền 5m · view hậu lúa",purchase:3950000000,paid:5480407315,outstanding:175000000,market:0,rentalProfit:0,debtAllocated:0,breakdown:{Land:3950000000,Legal:34920409,Equipment:576486907,Wood:70000000,Contractor:848999999}},
     {id:"mo-dua",name:"Mô Dừa",type:"Land",status:"Holding",location:"Thanh Nam, Cẩm Châu",description:"Thửa đất số 99",purchase:1999000000,paid:2010283869,outstanding:0,market:0,rentalProfit:0,debtAllocated:0,breakdown:{Land:1999000000,Legal:11283869}},
     {id:"mo-xanh",name:"Mô Xanh",type:"Land",status:"Holding",location:"Hội An",description:"Đất đầu tư",purchase:3200000000,paid:3209500000,outstanding:0,market:0,rentalProfit:0,debtAllocated:0,breakdown:{Land:3200000000,Legal:9500000}},
-    {id:"mo-lua",name:"Mô Lúa",type:"Land",status:"Holding",location:"Hội An",description:"Danh mục đất Mô Lúa",purchase:7450000000,paid:7553560361,outstanding:0,market:0,rentalProfit:0,debtAllocated:0,breakdown:{Land:7450000000,Legal:73560361,Other:30000000}},
+    {id:"mo-lua-1",name:"Mô Lúa 1",type:"Land",status:"Holding",location:"Hội An",description:"Đất Mô Lúa 1",purchase:2150000000,paid:2214789111,outstanding:0,market:0,rentalProfit:0,debtAllocated:0,breakdown:{Land:2150000000,Legal:34789111,Construction:30000000}},
+    {id:"mo-lua-moi",name:"Mô Lúa mới",type:"Land",status:"Holding",location:"Hội An",description:"Đất Mô Lúa mới",purchase:2300000000,paid:2328551000,outstanding:0,market:0,rentalProfit:0,debtAllocated:0,breakdown:{Land:2300000000,Legal:28551000}},
+    {id:"mo-tuoi-dat",name:"Mô Tươi Đất",type:"Land",status:"Holding",location:"An Mỹ, Cẩm Châu, Hội An",description:"Đất Mô Tươi",purchase:3000000000,paid:3010220250,outstanding:0,market:0,rentalProfit:0,debtAllocated:0,breakdown:{Land:3000000000,Legal:10220250}},
     {id:"mo-kim",name:"Mô Kim",type:"Land",status:"Sold",location:"Hội An",description:"Đã bán",purchase:2825000000,paid:2897490000,outstanding:0,market:4050000000,rentalProfit:0,debtAllocated:0,breakdown:{Land:2825000000,Legal:56890000,Construction:3600000,Other:12000000}},
     {id:"mo-tuoi-nha",name:"Mô Tươi Nhà",type:"House",status:"Sold",location:"An Mỹ, Cẩm Châu",description:"Nhà cho thuê 6 căn hộ · 171.2m²",purchase:0,paid:8184124126,outstanding:0,market:9500000000,rentalProfit:0,debtAllocated:0,breakdown:{TotalInvestment:8184124126}}
   ],
@@ -39,6 +41,17 @@ const shortMoney=n=>{const v=Number(n||0);if(Math.abs(v)>=1e9)return (v/1e9).toF
 const storageKey="moFinanceDataV2";
 const state=JSON.parse(localStorage.getItem(storageKey)||"null")||structuredClone(seed);
 const save=()=>localStorage.setItem(storageKey,JSON.stringify(state));
+// Split the old combined land portfolio only when it still matches the verified workbook.
+const oldLand=state.properties.find(p=>p.id==="mo-lua");
+if(oldLand&&Number(oldLand.paid)===7553560361&&Number(oldLand.outstanding||0)===0){
+ const newProps=structuredClone(seed.properties.filter(p=>["mo-lua-1","mo-lua-moi","mo-tuoi-dat"].includes(p.id)));
+ const present=new Set(state.properties.map(p=>p.id));
+ state.properties=state.properties.filter(p=>p.id!=="mo-lua");
+ newProps.forEach(p=>{if(!present.has(p.id))state.properties.push(p)});
+ // Preserve legacy transactions and loans: existing mo-lua references are not reassigned without evidence.
+ localStorage.setItem(storageKey,JSON.stringify(state));
+}
+
 // Mô Trầu: tab Mô Trầu base 5,472,407,315 + tab Tổng row 588 legal 8,000,000.
 const moTrau=state.properties.find(p=>p.id==="mo-trau");
 if(moTrau&&Number(moTrau.paid)===5472407315){
