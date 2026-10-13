@@ -138,8 +138,8 @@ function transactionControls(){
 }
 function bindTransactionControls(){
  const prop=document.querySelector("#filterProperty"),type=document.querySelector("#filterType"),search=document.querySelector("#filterSearch"),exp=document.querySelector("#exportTransactions");
- if(prop){prop.value=financeUi.property;prop.onchange=()=>{financeUi.property=prop.value;renderTransactions();renderCalendar()}}
- if(type){type.onchange=()=>{financeUi.type=type.value;renderTransactions();renderCalendar()}}
+ if(prop){prop.value=financeUi.property;prop.onchange=()=>{financeUi.property=prop.value;renderTransactions()}}
+ if(type){type.onchange=()=>{financeUi.type=type.value;renderTransactions()}}
  if(search){search.oninput=()=>{financeUi.search=search.value;const tbody=document.querySelector("#txRows");if(tbody)tbody.innerHTML=transactionRows(filteredTransactions())}}
  if(exp)exp.onclick=downloadTransactionsCsv;
 }
@@ -176,7 +176,7 @@ function renderCalendar(){
  document.querySelector("#calendarPrev").onclick=()=>prevNext(-1);
  document.querySelector("#calendarNext").onclick=()=>prevNext(1);
  document.querySelector("#calendarMonth").onchange=e=>{if(/^\\d{4}-\\d{2}$/.test(e.target.value)){financeUi.month=e.target.value;renderCalendar()}};
- const p=document.querySelector("#calendarProperty");p.value=financeUi.property;p.onchange=()=>{financeUi.property=p.value;renderCalendar();renderTransactions()};
+ const p=document.querySelector("#calendarProperty");p.value=financeUi.property;p.onchange=()=>{financeUi.property=p.value;renderTransactions()};
  document.querySelectorAll("[data-day]").forEach(button=>button.onclick=()=>{
   const date=button.dataset.day,entries=monthRows.filter(t=>t.date===date);
   document.querySelector("#calendarDetails").innerHTML=`<h3>${date} · ${entries.length} giao dịch</h3>${entries.length?'<div class="table-wrap"><table><thead><tr><th>Bất động sản</th><th>Loại</th><th>Nội dung</th><th class="money">Số tiền</th></tr></thead><tbody>'+entries.map(t=>`<tr><td>${escapeHtml(propName(t.property))}</td><td>${escapeHtml(t.type)}</td><td>${escapeHtml(t.description)}</td><td class="money">${money(t.amount)}</td></tr>`).join("")+'</tbody></table></div>':"<p>Ngày này chưa có giao dịch.</p>"}`;
@@ -300,7 +300,7 @@ function bindPropertyRows(){
  document.querySelectorAll("[data-property]").forEach(el=>el.onclick=e=>{e.stopPropagation();openProperty(el.dataset.property)});
 }
 
-function renderAll(){renderDashboard();renderProperties();renderTransactions();renderCalendar();renderLoans();renderRentals();renderSales();renderReports()}
+function renderAll(){renderDashboard();renderProperties();renderTransactions();renderLoans();renderRentals();renderSales();renderReports()}
 renderAll();
 
 document.querySelectorAll(".nav-item").forEach(btn=>btn.addEventListener("click",()=>{
