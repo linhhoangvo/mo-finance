@@ -12,25 +12,25 @@
     <aside class="sidebar">
       <div class="brand">
         <div class="brand-mark">M</div>
-        <div><strong>Mô Finance</strong><small>Property finance</small></div>
+        <div><strong>Mô Finance</strong><small>Quản lý tài chính nhà Mô</small></div>
       </div>
       <nav id="nav">
-        <button class="nav-item active" data-view="dashboard">Dashboard</button>
-        <button class="nav-item" data-view="properties">Properties</button>
-        <button class="nav-item" data-view="transactions">Transactions</button>
-        <button class="nav-item" data-view="calendar">Calendar</button>
-        <button class="nav-item" data-view="loans">Loans</button>
-        <button class="nav-item" data-view="rentals">Rentals</button>
-        <button class="nav-item" data-view="sales">Sales</button>
-        <button class="nav-item" data-view="reports">Reports</button>
+        <button class="nav-item active" data-view="dashboard">Tổng quan</button>
+        <button class="nav-item" data-view="properties">Bất động sản</button>
+        <button class="nav-item" data-view="transactions">Giao dịch</button>
+        <button class="nav-item" data-view="calendar">Lịch giao dịch</button>
+        <button class="nav-item" data-view="loans">Khoản vay</button>
+        <button class="nav-item" data-view="rentals">Cho thuê</button>
+        <button class="nav-item" data-view="sales">Mua bán</button>
+        <button class="nav-item" data-view="reports">Báo cáo</button>
       </nav>
-      <div class="sidebar-footer"><small>V3 · Loan allocation</small></div>
+      <div class="sidebar-footer"><small>V4 · Quản lý tài chính</small></div>
     </aside>
 
     <main>
       <header class="topbar">
-        <div><p class="eyebrow">PORTFOLIO</p><h1 id="pageTitle">Dashboard</h1></div>
-        <button class="primary" id="addTransactionBtn">+ Add transaction</button>
+        <div><p class="eyebrow">DANH MỤC TÀI SẢN</p><h1 id="pageTitle">Tổng quan</h1></div>
+        <button class="primary" id="addTransactionBtn">+ Thêm giao dịch</button>
       </header>
 
       <section id="dashboard" class="view active"></section>
@@ -51,39 +51,39 @@
   <dialog id="transactionDialog">
     <form method="dialog" id="transactionForm">
       <div class="dialog-head">
-        <div><p class="eyebrow">NEW ENTRY</p><h2>Add transaction</h2></div>
+        <div><p class="eyebrow">GIAO DỊCH MỚI</p><h2>Thêm giao dịch</h2></div>
         <button class="icon-btn" value="cancel" aria-label="Close">×</button>
       </div>
       <div class="form-grid">
-        <label>Date<input id="txDate" type="date" required></label>
-        <label>Property<select id="txProperty" required></select></label>
-        <label>Type<select id="txType" required>
-          <option>Expense</option><option>Income</option><option>Capital Contribution</option>
-          <option>Loan In</option><option>Loan Repayment</option><option>Transfer</option>
+        <label>Ngày<input id="txDate" type="date" required></label>
+        <label>Bất động sản<select id="txProperty" required></select></label>
+        <label>Loại giao dịch<select id="txType" required>
+          <option value="Expense">Chi phí</option><option value="Income">Thu nhập</option><option value="Capital Contribution">Góp vốn</option>
+          <option value="Loan In">Nhận tiền vay</option><option value="Loan Repayment">Trả nợ vay</option><option value="Transfer">Chuyển khoản nội bộ</option>
         </select></label>
-        <label>Category<input id="txCategory" placeholder="Renovation, Legal, Rent..." required></label>
-        <label class="span-2">Description<input id="txDescription" placeholder="Nội dung giao dịch" required></label>
-        <label>Amount (VND)<input id="txAmount" inputmode="numeric" type="number" min="0" step="1000" required></label>
-        <label>Source / Paid by<input id="txSource" placeholder="Owner, Bank, Supplier..."></label>
+        <label>Danh mục<input id="txCategory" placeholder="Sửa chữa, pháp lý, tiền thuê..." required></label>
+        <label class="span-2">Nội dung<input id="txDescription" placeholder="Nội dung giao dịch" required></label>
+        <label>Số tiền (VND)<input id="txAmount" inputmode="numeric" type="number" min="0" step="1000" required></label>
+        <label>Nguồn tiền / Người chi<input id="txSource" placeholder="Chủ đầu tư, ngân hàng, nhà cung cấp..."></label>
       </div>
       <div class="dialog-actions">
-        <button class="ghost" value="cancel">Cancel</button>
-        <button class="primary" id="saveTransaction" value="default">Save transaction</button>
+        <button class="ghost" value="cancel">Hủy</button>
+        <button class="primary" id="saveTransaction" value="default">Lưu giao dịch</button>
       </div>
     </form>
   </dialog>
 
   <dialog id="loanAllocationDialog">
     <div style="padding:22px">
-      <div class="dialog-head"><div><p class="eyebrow">DEBT ALLOCATION</p><h2 id="allocationTitle">Allocate loan</h2><p id="allocationSummary"></p></div><button class="icon-btn" type="button" onclick="document.querySelector('#loanAllocationDialog').close()" aria-label="Close">×</button></div>
+      <div class="dialog-head"><div><p class="eyebrow">PHÂN BỔ KHOẢN VAY</p><h2 id="allocationTitle">Phân bổ khoản vay</h2><p id="allocationSummary"></p></div><button class="icon-btn" type="button" onclick="document.querySelector('#loanAllocationDialog').close()" aria-label="Close">×</button></div>
       <div id="allocationRows" class="breakdown"></div>
       <form id="allocationForm">
         <div class="form-grid">
-          <label>Property<select id="allocationProperty" required></select></label>
-          <label>Allocate amount (VND)<input id="allocationAmount" type="number" min="1" step="1" required></label>
+          <label>Bất động sản<select id="allocationProperty" required></select></label>
+          <label>Số tiền phân bổ (VND)<input id="allocationAmount" type="number" min="1" step="1" required></label>
         </div>
         <p id="allocationError" role="alert" style="color:#a5493f"></p>
-        <div class="dialog-actions"><button type="button" class="ghost" onclick="document.querySelector('#loanAllocationDialog').close()">Done</button><button class="primary" type="submit">Add allocation</button></div>
+        <div class="dialog-actions"><button type="button" class="ghost" onclick="document.querySelector('#loanAllocationDialog').close()">Hoàn tất</button><button class="primary" type="submit">Thêm phân bổ</button></div>
       </form>
     </div>
   </dialog>
