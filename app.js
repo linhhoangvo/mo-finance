@@ -79,8 +79,8 @@ function statusClass(s){return s.toLowerCase().replace(/\s+/g,"-")}
 function barRow(name,value,total){const pct=total?Math.max(2,value/total*100):0;return `<div class="bar-row"><span>${name}</span><div class="bar"><span style="width:${pct}%"></span></div><strong>${shortMoney(value)}</strong></div>`}
 
 function propertyTable(list=state.properties){
- return `<div class="table-wrap"><table><thead><tr><th>Property</th><th>Status</th><th>Location</th><th class="money">Paid</th><th class="money">Outstanding</th><th class="money">Cost basis</th><th></th></tr></thead><tbody>
- ${list.map(p=>`<tr class="click-row" data-property="${p.id}"><td><strong>${p.name}</strong><br><small>${p.type}</small></td><td><span class="badge ${statusClass(p.status)}">${p.status}</span></td><td>${p.location||"-"}</td><td class="money">${money(p.paid)}</td><td class="money">${money(p.outstanding)}</td><td class="money"><strong>${money(costBasis(p))}</strong></td><td><button class="small-btn" data-property="${p.id}">View</button></td></tr>`).join("")}
+ return `<div class="table-wrap"><table><thead><tr><th>Bất động sản</th><th>Trạng thái</th><th>Vị trí</th><th class="money">Đã trả</th><th class="money">Còn nợ</th><th class="money">Giá vốn</th><th></th></tr></thead><tbody>
+ ${list.map(p=>`<tr class="click-row" data-property="${p.id}"><td><strong>${p.name}</strong><br><small>${p.type}</small></td><td><span class="badge ${statusClass(p.status)}">${p.status}</span></td><td>${p.location||"-"}</td><td class="money">${money(p.paid)}</td><td class="money">${money(p.outstanding)}</td><td class="money"><strong>${money(costBasis(p))}</strong></td><td><button class="small-btn" data-property="${p.id}">Xem</button></td></tr>`).join("")}
  </tbody></table></div>`;
 }
 
@@ -91,18 +91,18 @@ function renderDashboard(){
  document.querySelector("#dashboard").innerHTML=`
  <div class="note"><strong>V2:</strong> portfolio model lấy cấu trúc và số liệu tổng hợp từ workbook. V3: phân bổ dư nợ theo từng tài sản trong Loans → Allocate. Khoản chưa phân bổ vẫn được giữ ở cấp danh mục; không tự suy đoán khoản vay thuộc nhà nào.</div>
  <div class="kpi-grid">
-   ${kpi("Active cost basis",shortMoney(activeCost),"Tài sản chưa bán")}
-   ${kpi("Portfolio debt",shortMoney(totalDebt()),"Bank + private")}
-   ${kpi("Payables",shortMoney(payables),"Nhà thầu / nhà cung cấp")}
-   ${kpi("Cash held",shortMoney(state.cashHeld),"Theo tổng kết workbook")}
-   ${kpi("Realized profit",shortMoney(realizedProfit()),"Tài sản đã bán")}
+   ${kpi("Giá vốn tài sản đang giữ",shortMoney(activeCost),"Tài sản chưa bán")}
+   ${kpi("Tổng dư nợ",shortMoney(totalDebt()),"Bank + private")}
+   ${kpi("Công nợ phải trả",shortMoney(payables),"Nhà thầu / nhà cung cấp")}
+   ${kpi("Tiền mặt hiện có",shortMoney(state.cashHeld),"Theo tổng kết workbook")}
+   ${kpi("Lợi nhuận đã thực hiện",shortMoney(realizedProfit()),"Tài sản đã bán")}
  </div>
  <div class="section two-col">
-  <div><div class="section-head"><div><h2>Active portfolio</h2><p>Bấm vào một tài sản để xem chi tiết.</p></div></div>${propertyTable(active)}</div>
-  <div class="card chart-card"><h2>Capital deployed</h2><p>Cost basis theo tài sản đang nắm giữ</p>${active.map(p=>barRow(p.name,costBasis(p),activeCost)).join("")}</div>
+  <div><div class="section-head"><div><h2>Danh mục đang sở hữu</h2><p>Bấm vào một tài sản để xem chi tiết.</p></div></div>${propertyTable(active)}</div>
+  <div class="card chart-card"><h2>Vốn đã đầu tư</h2><p>Cost basis theo tài sản đang nắm giữ</p>${active.map(p=>barRow(p.name,costBasis(p),activeCost)).join("")}</div>
  </div>
  <div class="section">
-  <div class="section-head"><div><h2>Funding snapshot</h2><p>Tách Equity và Debt thay vì gộp thành “thu”.</p></div></div>
+  <div class="section-head"><div><h2>Cơ cấu nguồn vốn</h2><p>Tách Equity và Debt thay vì gộp thành “thu”.</p></div></div>
   <div class="source-grid">${state.capitalSources.map(s=>`<div class="card source-card"><span>${s.type}</span><strong>${shortMoney(s.amount)}</strong><small>${s.name}</small></div>`).join("")}</div>
  </div>`;
  bindPropertyRows();
@@ -111,8 +111,8 @@ function renderDashboard(){
 function renderProperties(){
  const active=activeProps(), sold=state.properties.filter(p=>p.status==="Sold");
  document.querySelector("#properties").innerHTML=`
- <div class="section-head"><div><h2>Active properties</h2><p>Mỗi tài sản là một project đầu tư.</p></div></div>${propertyTable(active)}
- <div class="section"><div class="section-head"><div><h2>Sold properties</h2><p>Lưu lịch sử cost basis và realized profit.</p></div></div>${propertyTable(sold)}</div>`;
+ <div class="section-head"><div><h2>Bất động sản đang sở hữu</h2><p>Mỗi tài sản là một project đầu tư.</p></div></div>${propertyTable(active)}
+ <div class="section"><div class="section-head"><div><h2>Bất động sản đã bán</h2><p>Lưu lịch sử cost basis và realized profit.</p></div></div>${propertyTable(sold)}</div>`;
  bindPropertyRows();
 }
 
@@ -131,10 +131,10 @@ function downloadTransactionsCsv(){
 }
 function transactionControls(){
  return `<div class="tx-controls">
- <label>Property<select id="filterProperty"><option value="all">All properties</option><option value="general">General / Portfolio</option>${state.properties.map(p=>`<option value="${escapeHtml(p.id)}" ${financeUi.property===p.id?"selected":""}>${escapeHtml(p.name)}</option>`).join("")}</select></label>
- <label>Type<select id="filterType">${["all","Expense","Income","Capital Contribution","Loan In","Loan Repayment","Transfer"].map(t=>`<option value="${t}" ${financeUi.type===t?"selected":""}>${t==="all"?"All types":t}</option>`).join("")}</select></label>
+ <label>Property<select id="filterProperty"><option value="all">Tất cả bất động sản</option><option value="general">Chi phí chung / Danh mục</option>${state.properties.map(p=>`<option value="${escapeHtml(p.id)}" ${financeUi.property===p.id?"selected":""}>${escapeHtml(p.name)}</option>`).join("")}</select></label>
+ <label>Type<select id="filterType">${["all","Expense","Income","Capital Contribution","Loan In","Loan Repayment","Transfer"].map(t=>`<option value="${t}" ${financeUi.type===t?"selected":""}>${t==="all"?"Tất cả loại giao dịch":({"Expense":"Chi phí","Income":"Thu nhập","Capital Contribution":"Góp vốn","Loan In":"Nhận tiền vay","Loan Repayment":"Trả nợ vay","Transfer":"Chuyển khoản nội bộ"}[t]||t)}</option>`).join("")}</select></label>
  <label>Search<input id="filterSearch" type="search" placeholder="Nội dung, số tiền..." value="${escapeHtml(financeUi.search)}"></label>
- <button type="button" class="ghost" id="exportTransactions">Export CSV</button></div>`;
+ <button type="button" class="ghost" id="exportTransactions">Xuất CSV</button></div>`;
 }
 function bindTransactionControls(){
  const prop=document.querySelector("#filterProperty"),type=document.querySelector("#filterType"),search=document.querySelector("#filterSearch"),exp=document.querySelector("#exportTransactions");
@@ -144,16 +144,16 @@ function bindTransactionControls(){
  if(exp)exp.onclick=downloadTransactionsCsv;
 }
 function transactionRows(rows){
- return rows.slice().sort((a,b)=>String(b.date).localeCompare(String(a.date))).map(t=>`<tr><td>${escapeHtml(t.date)}</td><td>${escapeHtml(propName(t.property))}</td><td><span class="badge">${escapeHtml(t.type)}</span></td><td>${escapeHtml(t.category)}</td><td>${escapeHtml(t.description)}</td><td>${escapeHtml(t.source||"-")}</td><td class="money">${money(t.amount)}</td></tr>`).join("")||'<tr><td colspan="7" class="empty">No matching transactions</td></tr>';
+ return rows.slice().sort((a,b)=>String(b.date).localeCompare(String(a.date))).map(t=>`<tr><td>${escapeHtml(t.date)}</td><td>${escapeHtml(propName(t.property))}</td><td><span class="badge">${escapeHtml(t.type)}</span></td><td>${escapeHtml(t.category)}</td><td>${escapeHtml(t.description)}</td><td>${escapeHtml(t.source||"-")}</td><td class="money">${money(t.amount)}</td></tr>`).join("")||'<tr><td colspan="7" class="empty">Không có giao dịch phù hợp</td></tr>';
 }
 function renderTransactions(){
  const rows=filteredTransactions();
  const spent=rows.filter(t=>t.type==="Expense").reduce((v,t)=>v+Number(t.amount||0),0);
  const income=rows.filter(t=>t.type==="Income").reduce((v,t)=>v+Number(t.amount||0),0);
- document.querySelector("#transactions").innerHTML=`<div class="section-head"><div><h2>Transactions</h2><p>Filter, search and export recorded transactions.</p></div></div>
+ document.querySelector("#transactions").innerHTML=`<div class="section-head"><div><h2>Giao dịch</h2><p>Lọc, tìm kiếm và xuất danh sách giao dịch.</p></div></div>
  ${transactionControls()}
- <div class="tx-totals"><span><strong>${rows.length}</strong> transactions</span><span>Expenses <strong>${money(spent)}</strong></span><span>Income <strong>${money(income)}</strong></span></div>
- <div class="table-wrap"><table><thead><tr><th>Date</th><th>Property</th><th>Type</th><th>Category</th><th>Description</th><th>Source</th><th class="money">Amount</th></tr></thead><tbody id="txRows">${transactionRows(rows)}</tbody></table></div>`;
+ <div class="tx-totals"><span><strong>${rows.length}</strong> giao dịch</span><span>Chi phís <strong>${money(spent)}</strong></span><span>Thu nhập <strong>${money(income)}</strong></span></div>
+ <div class="table-wrap"><table><thead><tr><th>Ngày</th><th>Bất động sản</th><th>Loại</th><th>Danh mục</th><th>Nội dung</th><th>Nguồn</th><th class="money">Số tiền</th></tr></thead><tbody id="txRows">${transactionRows(rows)}</tbody></table></div>`;
  bindTransactionControls();
 }
 function renderCalendar(){
@@ -164,14 +164,14 @@ function renderCalendar(){
  const byDay={};for(const t of monthRows){const day=Number(t.date.slice(8,10));(byDay[day]??=[]).push(t)}
  const cells=Array.from({length:first},()=>'<div class="calendar-day muted-day" aria-hidden="true"></div>');
  for(let day=1;day<=days;day++){
-   const entries=byDay[day]||[],expenses=entries.filter(t=>t.type==="Expense").reduce((v,t)=>v+Number(t.amount||0),0),income=entries.filter(t=>t.type==="Income").reduce((v,t)=>v+Number(t.amount||0),0);
+   const giao dịch=byDay[day]||[],chi phí=entries.filter(t=>t.type==="Expense").reduce((v,t)=>v+Number(t.amount||0),0),income=entries.filter(t=>t.type==="Income").reduce((v,t)=>v+Number(t.amount||0),0);
    const iso=month+"-"+String(day).padStart(2,"0");
-   cells.push(`<button type="button" class="calendar-day ${entries.length?"has-entries":""}" data-day="${iso}"><span class="calendar-number">${day}</span>${entries.length?`<small>${entries.length} entries</small>`:""}${expenses?`<span class="calendar-expense">− ${shortMoney(expenses)}</span>`:""}${income?`<span class="calendar-income">+ ${shortMoney(income)}</span>`:""}</button>`);
+   cells.push(`<button type="button" class="calendar-day ${entries.length?"has-entries":""}" data-day="${iso}"><span class="calendar-number">${day}</span>${entries.length?`<small>${entries.length} giao dịch</small>`:""}${chi phí?`<span class="calendar-expense">− ${shortMoney(chi phí)}</span>`:""}${income?`<span class="calendar-income">+ ${shortMoney(income)}</span>`:""}</button>`);
  }
- document.querySelector("#calendar").innerHTML=`<div class="section-head"><div><h2>Transaction calendar</h2><p>Daily money movements based on recorded transactions (not bank balances).</p></div></div>
- <div class="calendar-toolbar"><button type="button" class="ghost" id="calendarPrev" aria-label="Previous month">←</button><input type="month" id="calendarMonth" value="${month}" aria-label="Month"><button type="button" class="ghost" id="calendarNext" aria-label="Next month">→</button><select id="calendarProperty"><option value="all">All properties</option><option value="general">General / Portfolio</option>${state.properties.map(p=>`<option value="${escapeHtml(p.id)}">${escapeHtml(p.name)}</option>`).join("")}</select></div>
- <div class="calendar-summary"><span>${monthRows.length} transactions</span><span>Expenses: <strong>${money(monthRows.filter(t=>t.type==="Expense").reduce((v,t)=>v+Number(t.amount||0),0))}</strong></span><span>Income: <strong>${money(monthRows.filter(t=>t.type==="Income").reduce((v,t)=>v+Number(t.amount||0),0))}</strong></span></div>
- <div class="calendar-grid">${["Mon","Tue","Wed","Thu","Fri","Sat","Sun"].map(d=>`<div class="calendar-weekday">${d}</div>`).join("")}${cells.join("")}</div><div class="card calendar-details" id="calendarDetails"><p>Select a date to view transactions.</p></div>`;
+ document.querySelector("#calendar").innerHTML=`<div class="section-head"><div><h2>Lịch giao dịch</h2><p>Biến động thu chi theo giao dịch đã nhập, không phải số dư ngân hàng.</p></div></div>
+ <div class="calendar-toolbar"><button type="button" class="ghost" id="calendarPrev" aria-label="Tháng trước">←</button><input type="month" id="calendarMonth" value="${month}" aria-label="Month"><button type="button" class="ghost" id="calendarNext" aria-label="Tháng sau">→</button><select id="calendarProperty"><option value="all">Tất cả bất động sản</option><option value="general">Chi phí chung / Danh mục</option>${state.properties.map(p=>`<option value="${escapeHtml(p.id)}">${escapeHtml(p.name)}</option>`).join("")}</select></div>
+ <div class="calendar-summary"><span>${monthRows.length} giao dịch</span><span>Chi phí: <strong>${money(monthRows.filter(t=>t.type==="Expense").reduce((v,t)=>v+Number(t.amount||0),0))}</strong></span><span>Thu nhập: <strong>${money(monthRows.filter(t=>t.type==="Income").reduce((v,t)=>v+Number(t.amount||0),0))}</strong></span></div>
+ <div class="calendar-grid">${["Mon","Tue","Wed","Thu","Fri","Sat","Sun"].map(d=>`<div class="calendar-weekday">${d}</div>`).join("")}${cells.join("")}</div><div class="card calendar-details" id="calendarDetails"><p>Chọn ngày để xem chi tiết giao dịch.</p></div>`;
  const prevNext=n=>{const d=new Date(year,mon-1+n,1);financeUi.month=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0");renderCalendar()};
  document.querySelector("#calendarPrev").onclick=()=>prevNext(-1);
  document.querySelector("#calendarNext").onclick=()=>prevNext(1);
@@ -179,7 +179,7 @@ function renderCalendar(){
  const p=document.querySelector("#calendarProperty");p.value=financeUi.property;p.onchange=()=>{financeUi.property=p.value;renderCalendar();renderTransactions()};
  document.querySelectorAll("[data-day]").forEach(button=>button.onclick=()=>{
   const date=button.dataset.day,entries=monthRows.filter(t=>t.date===date);
-  document.querySelector("#calendarDetails").innerHTML=`<h3>${date} · ${entries.length} transactions</h3>${entries.length?'<div class="table-wrap"><table><thead><tr><th>Property</th><th>Type</th><th>Description</th><th class="money">Amount</th></tr></thead><tbody>'+entries.map(t=>`<tr><td>${escapeHtml(propName(t.property))}</td><td>${escapeHtml(t.type)}</td><td>${escapeHtml(t.description)}</td><td class="money">${money(t.amount)}</td></tr>`).join("")+'</tbody></table></div>':"<p>No entries on this day.</p>"}`;
+  document.querySelector("#calendarDetails").innerHTML=`<h3>${date} · ${entries.length} giao dịch</h3>${entries.length?'<div class="table-wrap"><table><thead><tr><th>Bất động sản</th><th>Loại</th><th>Nội dung</th><th class="money">Số tiền</th></tr></thead><tbody>'+entries.map(t=>`<tr><td>${escapeHtml(propName(t.property))}</td><td>${escapeHtml(t.type)}</td><td>${escapeHtml(t.description)}</td><td class="money">${money(t.amount)}</td></tr>`).join("")+'</tbody></table></div>':"<p>Ngày này chưa có giao dịch.</p>"}`;
  });
 }
 
@@ -187,26 +187,26 @@ function renderLoans(){
  const allocated=state.loans.reduce((v,l)=>v+loanAllocated(l),0);
  document.querySelector("#loans").innerHTML=`
  <div class="note">Phân bổ dư nợ cho từng tài sản bằng nút <strong>Allocate</strong>. Đây là phân bổ phục vụ quản trị, không làm thay đổi tổng nợ. Phần chưa gắn tài sản sẽ không được tự động đưa vào phép tính dòng tiền bán nhà.</div>
- <div class="kpi-grid">${kpi("Total outstanding",shortMoney(totalDebt()),"All loans")}${kpi("Allocated debt",shortMoney(allocated),"Linked to properties")}${kpi("Unallocated debt",shortMoney(totalDebt()-allocated),"Needs review")}${kpi("Interest paid",shortMoney(totalInterestPaid()),"Workbook history")}${kpi("Bank debt",shortMoney(state.loans.filter(x=>x.type==="Bank").reduce((s,x)=>s+Number(x.outstanding||0),0)),"Bank")}</div>
- <div class="section"><div class="table-wrap"><table><thead><tr><th>Loan</th><th>Type</th><th class="money">Outstanding</th><th class="money">Allocated</th><th class="money">Unallocated</th><th></th></tr></thead><tbody>
- ${state.loans.map(l=>`<tr><td><strong>${escapeHtml(l.name)}</strong></td><td><span class="badge debt">${escapeHtml(l.type)}</span></td><td class="money">${money(l.outstanding)}</td><td class="money">${money(loanAllocated(l))}</td><td class="money">${money(loanUnallocated(l))}</td><td><button class="small-btn" data-allocate-loan="${escapeHtml(l.id)}">Allocate</button></td></tr>`).join("")}
+ <div class="kpi-grid">${kpi("Tổng dư nợ",shortMoney(totalDebt()),"All loans")}${kpi("Nợ đã phân bổ",shortMoney(allocated),"Linked to properties")}${kpi("Nợ chưa phân bổ",shortMoney(totalDebt()-allocated),"Needs review")}${kpi("Lãi đã trả",shortMoney(totalInterestPaid()),"Workbook history")}${kpi("Nợ ngân hàng",shortMoney(state.loans.filter(x=>x.type==="Bank").reduce((s,x)=>s+Number(x.outstanding||0),0)),"Bank")}</div>
+ <div class="section"><div class="table-wrap"><table><thead><tr><th>Loan</th><th>Loại</th><th class="money">Còn nợ</th><th class="money">Đã phân bổ</th><th class="money">Chưa phân bổ</th><th></th></tr></thead><tbody>
+ ${state.loans.map(l=>`<tr><td><strong>${escapeHtml(l.name)}</strong></td><td><span class="badge debt">${escapeHtml(l.type)}</span></td><td class="money">${money(l.outstanding)}</td><td class="money">${money(loanAllocated(l))}</td><td class="money">${money(loanUnallocated(l))}</td><td><button class="small-btn" data-allocate-loan="${escapeHtml(l.id)}">Phân bổ</button></td></tr>`).join("")}
  </tbody></table></div></div>
- <div class="section"><h2>Debt by property</h2><div class="table-wrap"><table><thead><tr><th>Property</th><th class="money">Cost basis</th><th class="money">Allocated debt</th><th class="money">Estimated equity at cost</th></tr></thead><tbody>${state.properties.map(p=>`<tr><td>${escapeHtml(p.name)}</td><td class="money">${money(costBasis(p))}</td><td class="money">${money(propertyLoanBalance(p.id))}</td><td class="money">${money(costBasis(p)-propertyLoanBalance(p.id))}</td></tr>`).join("")}</tbody></table></div></div>`;
+ <div class="section"><h2>Dư nợ theo tài sản</h2><div class="table-wrap"><table><thead><tr><th>Bất động sản</th><th class="money">Giá vốn</th><th class="money">Nợ đã phân bổ</th><th class="money">Vốn chủ sở hữu theo giá vốn</th></tr></thead><tbody>${state.properties.map(p=>`<tr><td>${escapeHtml(p.name)}</td><td class="money">${money(costBasis(p))}</td><td class="money">${money(propertyLoanBalance(p.id))}</td><td class="money">${money(costBasis(p)-propertyLoanBalance(p.id))}</td></tr>`).join("")}</tbody></table></div></div>`;
  document.querySelectorAll("[data-allocate-loan]").forEach(b=>b.addEventListener("click",()=>openLoanAllocation(b.dataset.allocateLoan)));
 }
 
 function openLoanAllocation(id){
  const loan=state.loans.find(l=>l.id===id);if(!loan)return;
  const dialog=document.querySelector("#loanAllocationDialog");
- const entries=loan.allocations||[];
+ const giao dịch=loan.allocations||[];
  dialog.querySelector("#allocationTitle").textContent="Allocate · "+loan.name;
- dialog.querySelector("#allocationSummary").textContent="Outstanding "+money(loan.outstanding)+" · Available "+money(loanUnallocated(loan));
+ dialog.querySelector("#allocationSummary").textContent="Dư nợ "+money(loan.outstanding)+" · Có thể phân bổ "+money(loanUnallocated(loan));
  const select=dialog.querySelector("#allocationProperty");
  select.innerHTML=state.properties.map(p=>`<option value="${escapeHtml(p.id)}">${escapeHtml(p.name)}</option>`).join("");
  dialog.querySelector("#allocationAmount").value="";
  dialog.querySelector("#allocationError").textContent="";
  const listing=dialog.querySelector("#allocationRows");
- listing.innerHTML=entries.length?entries.map((a,i)=>`<div class="breakdown-row"><span>${escapeHtml(propName(a.propertyId))}</span><strong>${money(a.amount)}</strong><button type="button" class="small-btn" data-remove-allocation="${i}">Remove</button></div>`).join(""):'<p class="empty">No allocations yet.</p>';
+ listing.innerHTML=entries.length?entries.map((a,i)=>`<div class="breakdown-row"><span>${escapeHtml(propName(a.propertyId))}</span><strong>${money(a.amount)}</strong><button type="button" class="small-btn" data-remove-allocation="${i}">Xóa</button></div>`).join(""):'<p class="empty">Chưa có phân bổ.</p>';
  listing.querySelectorAll("[data-remove-allocation]").forEach(b=>b.onclick=()=>{
    loan.allocations.splice(Number(b.dataset.removeAllocation),1);save();renderAll();openLoanAllocation(id);
  });
@@ -214,7 +214,7 @@ function openLoanAllocation(id){
    e.preventDefault();
    const propertyId=select.value,amount=Number(dialog.querySelector("#allocationAmount").value);
    if(!Number.isSafeInteger(amount)||amount<=0||amount>loanUnallocated(loan)){
-      dialog.querySelector("#allocationError").textContent="Enter a positive whole-VND amount no greater than the unallocated balance.";return;
+      dialog.querySelector("#allocationError").textContent="Nhập số tiền VND nguyên dương, không vượt quá dư nợ chưa phân bổ.";return;
    }
    const existing=loan.allocations.find(a=>a.propertyId===propertyId);
    if(existing)existing.amount+=amount;else loan.allocations.push({propertyId,amount});
@@ -224,14 +224,14 @@ function openLoanAllocation(id){
 }
 
 function renderRentals(){
- document.querySelector("#rentals").innerHTML=`<div class="section-head"><div><h2>Rental operations</h2><p>V2 đã chuẩn bị cấu trúc NOI theo từng property.</p></div></div>
- <div class="card empty">Chưa import được lịch sử doanh thu thuê từ workbook. Giao dịch Income/Expense có thể được thêm ngay từ nút “Add transaction”.</div>`;
+ document.querySelector("#rentals").innerHTML=`<div class="section-head"><div><h2>Quản lý cho thuê</h2><p>V2 đã chuẩn bị cấu trúc NOI theo từng property.</p></div></div>
+ <div class="card empty">Chưa import được lịch sử doanh thu thuê từ workbook. Giao dịch Thu nhập/Chi phí có thể được thêm ngay từ nút “Add transaction”.</div>`;
 }
 
 function renderSales(){
  document.querySelector("#sales").innerHTML=`
- <div class="kpi-grid">${kpi("Realized profit",shortMoney(realizedProfit()),"Gross realized gain from workbook")}${kpi("Sold assets",state.sales.length,"Recorded exits")}</div>
- <div class="section"><div class="table-wrap"><table><thead><tr><th>Property</th><th class="money">Cost basis</th><th class="money">Sale price</th><th class="money">Profit</th><th class="money">ROI</th></tr></thead><tbody>
+ <div class="kpi-grid">${kpi("Lợi nhuận đã thực hiện",shortMoney(realizedProfit()),"Lợi nhuận từ dữ liệu gốc")}${kpi("Số tài sản đã bán",state.sales.length,"Recorded exits")}</div>
+ <div class="section"><div class="table-wrap"><table><thead><tr><th>Bất động sản</th><th class="money">Giá vốn</th><th class="money">Giá bán</th><th class="money">Profit</th><th class="money">ROI</th></tr></thead><tbody>
  ${state.sales.map(s=>`<tr class="click-row" data-property="${s.propertyId}"><td><strong>${s.property}</strong></td><td class="money">${money(s.cost)}</td><td class="money">${money(s.price)}</td><td class="money">${money(s.profit)}</td><td class="money">${(s.profit/s.cost*100).toFixed(1)}%</td></tr>`).join("")}
  </tbody></table></div></div>`;
  bindPropertyRows();
@@ -243,9 +243,9 @@ function renderReports(){
  activeProps().forEach(p=>Object.entries(p.breakdown||{}).forEach(([k,v])=>categories[k]=(categories[k]||0)+Number(v||0)));
  document.querySelector("#reports").innerHTML=`
  <div class="two-col">
-  <div class="card chart-card"><h2>Active cost mix</h2><p>Breakdown từ các property có dữ liệu phân loại.</p>${Object.entries(categories).sort((a,b)=>b[1]-a[1]).map(([k,v])=>barRow(k,v,activeCost)).join("")}</div>
-  <div class="card chart-card"><h2>Management view</h2><p>Những số cần tách riêng</p>
-   <div class="breakdown"><div class="breakdown-row"><span>Owner capital</span><strong>Equity</strong></div><div class="breakdown-row"><span>Bank/private loans</span><strong>Debt</strong></div><div class="breakdown-row"><span>Rental income − operating costs</span><strong>NOI</strong></div><div class="breakdown-row"><span>Sale proceeds − full cost basis</span><strong>Net profit</strong></div></div>
+  <div class="card chart-card"><h2>Cơ cấu giá vốn</h2><p>Breakdown từ các property có dữ liệu phân loại.</p>${Object.entries(categories).sort((a,b)=>b[1]-a[1]).map(([k,v])=>barRow(k,v,activeCost)).join("")}</div>
+  <div class="card chart-card"><h2>Tổng quan quản trị</h2><p>Những số cần tách riêng</p>
+   <div class="breakdown"><div class="breakdown-row"><span>Vốn chủ đầu tư</span><strong>Equity</strong></div><div class="breakdown-row"><span>Vay ngân hàng / cá nhân</span><strong>Debt</strong></div><div class="breakdown-row"><span>Rental income − operating costs</span><strong>NOI</strong></div><div class="breakdown-row"><span>Sale proceeds − full cost basis</span><strong>Lợi nhuận ròng</strong></div></div>
   </div>
  </div>`;
 }
@@ -259,23 +259,23 @@ function openProperty(id){
  <div class="property-head"><div><p class="eyebrow">PROPERTY</p><h2>${p.name}</h2><div class="property-meta"><span class="badge ${statusClass(p.status)}">${p.status}</span><span>${p.type}</span><span>·</span><span>${p.location}</span><span>·</span><span>${p.description||""}</span></div></div><button class="icon-btn" id="closeProperty">×</button></div>
  <div class="property-body">
   <div class="detail-grid">
-   <div class="mini-card"><span>Purchase / Land</span><strong>${money(p.purchase)}</strong></div>
-   <div class="mini-card"><span>Paid to date</span><strong>${money(p.paid)}</strong></div>
-   <div class="mini-card"><span>Outstanding payable</span><strong>${money(p.outstanding)}</strong></div>
-   <div class="mini-card"><span>Total cost basis</span><strong>${money(basis)}</strong></div>
+   <div class="mini-card"><span>Giá mua / Đất</span><strong>${money(p.purchase)}</strong></div>
+   <div class="mini-card"><span>Đã thanh toán</span><strong>${money(p.paid)}</strong></div>
+   <div class="mini-card"><span>Còn phải trả</span><strong>${money(p.outstanding)}</strong></div>
+   <div class="mini-card"><span>Tổng giá vốn</span><strong>${money(basis)}</strong></div>
   </div>
-  <div class="section"><div class="section-head"><div><h2>Cost breakdown</h2><p>Phân loại chi phí từ workbook.</p></div></div>
-   <div class="breakdown">${Object.entries(p.breakdown||{}).map(([k,v])=>`<div class="breakdown-row"><span>${k}</span><strong>${money(v)}</strong></div>`).join("")||'<div class="empty">No breakdown yet</div>'}</div>
+  <div class="section"><div class="section-head"><div><h2>Chi tiết chi phí</h2><p>Phân loại chi phí từ workbook.</p></div></div>
+   <div class="breakdown">${Object.entries(p.breakdown||{}).map(([k,v])=>`<div class="breakdown-row"><span>${k}</span><strong>${money(v)}</strong></div>`).join("")||'<div class="empty">Chưa có chi tiết</div>'}</div>
   </div>
-  ${sale?`<div class="calc"><h3>Exit result</h3><p>Asset already sold.</p><div class="calc-result"><div class="result-box"><span>Sale price</span><strong>${money(sale.price)}</strong></div><div class="result-box"><span>Cost basis</span><strong>${money(sale.cost)}</strong></div><div class="result-box"><span>Profit</span><strong>${money(sale.profit)}</strong></div><div class="result-box"><span>ROI</span><strong>${(sale.profit/sale.cost*100).toFixed(1)}%</strong></div></div></div>`:
-  `<div class="calc"><h3>What if I sell today?</h3><p>Nhập giá bán dự kiến và chi phí bán để xem tiền thực nhận và lợi nhuận.</p>
+  ${sale?`<div class="calc"><h3>Kết quả bán tài sản</h3><p>Asset already sold.</p><div class="calc-result"><div class="result-box"><span>Giá bán</span><strong>${money(sale.price)}</strong></div><div class="result-box"><span>Cost basis</span><strong>${money(sale.cost)}</strong></div><div class="result-box"><span>Profit</span><strong>${money(sale.profit)}</strong></div><div class="result-box"><span>ROI</span><strong>${(sale.profit/sale.cost*100).toFixed(1)}%</strong></div></div></div>`:
+  `<div class="calc"><h3>Nếu bán hôm nay thì sao?</h3><p>Nhập giá bán dự kiến và chi phí bán để xem tiền thực nhận và lợi nhuận.</p>
    <div class="calc-grid">
-    <label>Expected sale price<input id="salePrice" type="number" step="1000000" value="${p.market||basis}"></label>
-    <label>Selling costs (%)<input id="sellingPct" type="number" step="0.1" value="2"></label>
-    <label>Loan payoff<input id="loanPayoff" type="number" step="1000000" value="${propertyLoanBalance(p.id)}"></label>
-    <label>Rental profit to date<input id="rentalProfit" type="number" step="1000000" value="${p.rentalProfit||0}"></label>
+    <label>Giá bán dự kiến<input id="salePrice" type="number" step="1000000" value="${p.market||basis}"></label>
+    <label>Chi phí bán (%)<input id="sellingPct" type="number" step="0.1" value="2"></label>
+    <label>Tất toán khoản vay<input id="loanPayoff" type="number" step="1000000" value="${propertyLoanBalance(p.id)}"></label>
+    <label>Lợi nhuận thuê lũy kế<input id="rentalProfit" type="number" step="1000000" value="${p.rentalProfit||0}"></label>
    </div>
-   <p style="margin-top:10px">Loan payoff defaults to allocated debt. Check actual repayment amounts before making decisions; changing the calculator does not update loan records.</p><div class="calc-result" id="calcResult"></div>
+   <p style="margin-top:10px">Tất toán khoản vay defaults to allocated debt. Cần đối chiếu số tiền tất toán thực tế; điều chỉnh ở đây không thay đổi hồ sơ khoản vay.</p><div class="calc-result" id="calcResult"></div>
   </div>`}
  </div>`;
  document.querySelector("#propertyDialog").showModal();
@@ -291,9 +291,9 @@ function updateSaleCalc(p){
  const sellingCosts=price*pct/100, basis=costBasis(p), profit=price-sellingCosts-basis+rent, cashAfterDebt=price-sellingCosts-loan;
  document.querySelector("#calcResult").innerHTML=`
  <div class="result-box"><span>Selling costs</span><strong>${money(sellingCosts)}</strong></div>
- <div class="result-box"><span>Cash after debt</span><strong>${money(cashAfterDebt)}</strong></div>
- <div class="result-box"><span>Estimated profit</span><strong>${money(profit)}</strong></div>
- <div class="result-box"><span>ROI on cost</span><strong>${basis?(profit/basis*100).toFixed(1):"0.0"}%</strong></div>`;
+ <div class="result-box"><span>Tiền còn lại sau trả nợ</span><strong>${money(cashAfterDebt)}</strong></div>
+ <div class="result-box"><span>Lợi nhuận dự kiến</span><strong>${money(profit)}</strong></div>
+ <div class="result-box"><span>Tỷ suất lợi nhuận trên giá vốn</span><strong>${basis?(profit/basis*100).toFixed(1):"0.0"}%</strong></div>`;
 }
 
 function bindPropertyRows(){
@@ -311,7 +311,7 @@ document.querySelectorAll(".nav-item").forEach(btn=>btn.addEventListener("click"
 const dialog=document.querySelector("#transactionDialog");
 document.querySelector("#addTransactionBtn").onclick=()=>{
  const sel=document.querySelector("#txProperty");
- sel.innerHTML='<option value="general">General / Portfolio</option>'+state.properties.map(p=>`<option value="${p.id}">${p.name}</option>`).join("");
+ sel.innerHTML='<option value="general">Chi phí chung / Danh mục</option>'+state.properties.map(p=>`<option value="${p.id}">${p.name}</option>`).join("");
  document.querySelector("#txDate").value=new Date().toISOString().slice(0,10);dialog.showModal();
 };
 document.querySelector("#transactionForm").addEventListener("submit",e=>{
