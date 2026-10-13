@@ -362,7 +362,7 @@ function bindPropertyRows(){
  document.querySelectorAll("[data-property]").forEach(el=>el.onclick=e=>{e.stopPropagation();openProperty(el.dataset.property)});
 }
 
-function renderAll(){renderDashboard();renderProperties();renderTransactions();renderLoans();renderRentals();renderSales();renderReports()}
+function renderAll(){renderProperties();renderTransactions();renderLoans();renderRentals();renderSales();renderReports()}
 renderAll();
 
 document.querySelectorAll(".nav-item").forEach(btn=>btn.addEventListener("click",()=>{
