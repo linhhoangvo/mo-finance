@@ -2,7 +2,7 @@ const seed = {
   version: 2,
   cashHeld: 1674144215,
   properties: [
-    {id:"mo-sen",name:"Mô Sen",type:"House",status:"Renovating",location:"Cẩm Hà, Hội An",description:"120m² · mặt tiền 6m · view lúa & sen",purchase:3440000000,paid:4753803639,outstanding:255000000,market:0,rentalProfit:0,debtAllocated:0,breakdown:{Land:3440000000,Legal:6364765,OtherUnclassified:7507604,Construction:514431270,Wood:100000000,Contractor:685500000}},
+    {id:"mo-sen",name:"Mô Sen",type:"House",status:"Renovating",location:"Cẩm Hà, Hội An",description:"120m² · mặt tiền 6m · view lúa & sen",purchase:3440000000,paid:4753803639,outstanding:255000000,market:0,rentalProfit:0,debtAllocated:0,breakdown:{Land:3440000000,Legal:13872369,Construction:514431270,Wood:100000000,Contractor:685500000}},
     {id:"mo-trau",name:"Mô Trầu",type:"House",status:"Operating",location:"Cẩm Châu, Hội An",description:"152.7m² · mặt tiền 5m · view hậu lúa",purchase:3950000000,paid:5480407315,outstanding:175000000,market:0,rentalProfit:0,debtAllocated:0,breakdown:{Land:3950000000,Legal:34920409,Equipment:576486907,Wood:70000000,Contractor:848999999}},
     {id:"mo-dua",name:"Mô Dừa",type:"Land",status:"Holding",location:"Thanh Nam, Cẩm Châu",description:"Thửa đất số 99",purchase:1999000000,paid:2010283869,outstanding:0,market:0,rentalProfit:0,debtAllocated:0,breakdown:{Land:1999000000,Legal:11283869}},
     {id:"mo-xanh",name:"Mô Xanh",type:"Land",status:"Holding",location:"Hội An",description:"Đất đầu tư",purchase:3200000000,paid:3209500000,outstanding:0,market:0,rentalProfit:0,debtAllocated:0,breakdown:{Land:3200000000,Legal:9500000}},
@@ -54,6 +54,11 @@ if(verifiedSen && Number(verifiedSen.breakdown?.Legal)===13872369){
  verifiedSen.breakdown.OtherUnclassified=7507604;
  save();
 }
+if(verifiedSen && Number(verifiedSen.breakdown?.OtherUnclassified)===7507604){
+ verifiedSen.breakdown.Legal=13872369;
+ delete verifiedSen.breakdown.OtherUnclassified;
+ save();
+}
 if(!state.properties.some(p=>p.id==="nuong-om")){
  state.properties.push(structuredClone(seed.properties.find(p=>p.id==="nuong-om")));
  save();
@@ -79,6 +84,7 @@ if(moTrau&&Number(moTrau.paid)===5472407315){
 
 // Incremental source-sheet import. Fixed source-row IDs make reloading idempotent.
 const sheetUpdates=[
+ {row:586,date:"2026-09-17",property:"mo-sen",category:"Legal",description:"Làm sổ + đóng thuế đưa nhà vào sổ nhà Sen",amount:6485674},
  {row:588,date:"2026-09-19",property:"mo-trau",category:"Legal",description:"Mô Trầu chuyển khoản làm giấy tờ",amount:8000000},
  {row:602,date:"2026-09-11",property:"general",category:"Payroll",description:"Chi phí lương Cam",amount:239000000},
 
