@@ -2,7 +2,7 @@ const seed = {
   version: 2,
   cashHeld: 1674144215,
   properties: [
-    {id:"mo-sen",name:"Mô Sen",type:"House",status:"Renovating",location:"Cẩm Hà, Hội An",description:"120m² · mặt tiền 6m · view lúa & sen",purchase:3440000000,paid:4753803639,outstanding:255000000,market:0,rentalProfit:0,debtAllocated:0,breakdown:{Land:3440000000,Legal:13872369,Construction:514431270,Wood:100000000,Contractor:685500000}},
+    {id:"mo-sen",name:"Mô Sen",type:"House",status:"Renovating",location:"Cẩm Hà, Hội An",description:"120m² · mặt tiền 6m · view lúa & sen",purchase:3440000000,paid:4753803639,outstanding:255000000,market:0,rentalProfit:0,debtAllocated:0,breakdown:{Land:3440000000,Legal:6364765,OtherUnclassified:7507604,Construction:514431270,Wood:100000000,Contractor:685500000}},
     {id:"mo-trau",name:"Mô Trầu",type:"House",status:"Operating",location:"Cẩm Châu, Hội An",description:"152.7m² · mặt tiền 5m · view hậu lúa",purchase:3950000000,paid:5480407315,outstanding:175000000,market:0,rentalProfit:0,debtAllocated:0,breakdown:{Land:3950000000,Legal:34920409,Equipment:576486907,Wood:70000000,Contractor:848999999}},
     {id:"mo-dua",name:"Mô Dừa",type:"Land",status:"Holding",location:"Thanh Nam, Cẩm Châu",description:"Thửa đất số 99",purchase:1999000000,paid:2010283869,outstanding:0,market:0,rentalProfit:0,debtAllocated:0,breakdown:{Land:1999000000,Legal:11283869}},
     {id:"mo-xanh",name:"Mô Xanh",type:"Land",status:"Holding",location:"Hội An",description:"Đất đầu tư",purchase:3200000000,paid:3209500000,outstanding:0,market:0,rentalProfit:0,debtAllocated:0,breakdown:{Land:3200000000,Legal:9500000}},
@@ -46,7 +46,12 @@ const verifiedSen=state.properties.find(p=>p.id==="mo-sen");
 if(verifiedSen && Number(verifiedSen.paid)===4746296035){
  verifiedSen.paid=4753803639;
  verifiedSen.breakdown=verifiedSen.breakdown||{};
- verifiedSen.breakdown.Legal=Number(verifiedSen.breakdown.Legal||0)+7507604;
+ verifiedSen.breakdown.OtherUnclassified=Number(verifiedSen.breakdown.OtherUnclassified||0)+7507604;
+ save();
+}
+if(verifiedSen && Number(verifiedSen.breakdown?.Legal)===13872369){
+ verifiedSen.breakdown.Legal=6364765;
+ verifiedSen.breakdown.OtherUnclassified=7507604;
  save();
 }
 if(!state.properties.some(p=>p.id==="nuong-om")){
