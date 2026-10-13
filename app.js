@@ -116,11 +116,71 @@ function renderProperties(){
  bindPropertyRows();
 }
 
+const isoDate=d=>{const x=String(d||"");return /^\\d{4}-\\d{2}-\\d{2}$/.test(x)?x:""};
+const calendarToday=()=>{const d=new Date(),local=new Date(d.getTime()-d.getTimezoneOffset()*60000);return local.toISOString().slice(0,7)};
+const financeUi={month:calendarToday(),property:"all",type:"all",search:""};
+function filteredTransactions(){
+ return state.transactions.filter(t=>(financeUi.property==="all"||t.property===financeUi.property)&&(financeUi.type==="all"||t.type===financeUi.type)&&(!financeUi.search||[t.date,propName(t.property),t.type,t.category,t.description,t.source,t.amount].join(" ").toLocaleLowerCase("vi").includes(financeUi.search.toLocaleLowerCase("vi"))));
+}
+function downloadTransactionsCsv(){
+ const columns=["Date","Property","Type","Category","Description","Amount (VND)","Source"];
+ const rows=filteredTransactions().map(t=>[t.date,propName(t.property),t.type,t.category,t.description,Number(t.amount)||0,t.source||""]);
+ const csv="\\uFEFF"+[columns,...rows].map(row=>row.map(v=>'"'+String(v??"").replace(/"/g,'""')+'"').join(",")).join("\\r\\n");
+ const url=URL.createObjectURL(new Blob([csv],{type:"text/csv;charset=utf-8"}));
+ const link=document.createElement("a");link.href=url;link.download="mo-finance-transactions.csv";document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
+function transactionControls(){
+ return `<div class="tx-controls">
+ <label>Property<select id="filterProperty"><option value="all">All properties</option><option value="general">General / Portfolio</option>${state.properties.map(p=>`<option value="${escapeHtml(p.id)}" ${financeUi.property===p.id?"selected":""}>${escapeHtml(p.name)}</option>`).join("")}</select></label>
+ <label>Type<select id="filterType">${["all","Expense","Income","Capital Contribution","Loan In","Loan Repayment","Transfer"].map(t=>`<option value="${t}" ${financeUi.type===t?"selected":""}>${t==="all"?"All types":t}</option>`).join("")}</select></label>
+ <label>Search<input id="filterSearch" type="search" placeholder="Nội dung, số tiền..." value="${escapeHtml(financeUi.search)}"></label>
+ <button type="button" class="ghost" id="exportTransactions">Export CSV</button></div>`;
+}
+function bindTransactionControls(){
+ const prop=document.querySelector("#filterProperty"),type=document.querySelector("#filterType"),search=document.querySelector("#filterSearch"),exp=document.querySelector("#exportTransactions");
+ if(prop){prop.value=financeUi.property;prop.onchange=()=>{financeUi.property=prop.value;renderTransactions();renderCalendar()}}
+ if(type){type.onchange=()=>{financeUi.type=type.value;renderTransactions();renderCalendar()}}
+ if(search){search.oninput=()=>{financeUi.search=search.value;const tbody=document.querySelector("#txRows");if(tbody)tbody.innerHTML=transactionRows(filteredTransactions())}}
+ if(exp)exp.onclick=downloadTransactionsCsv;
+}
+function transactionRows(rows){
+ return rows.slice().sort((a,b)=>String(b.date).localeCompare(String(a.date))).map(t=>`<tr><td>${escapeHtml(t.date)}</td><td>${escapeHtml(propName(t.property))}</td><td><span class="badge">${escapeHtml(t.type)}</span></td><td>${escapeHtml(t.category)}</td><td>${escapeHtml(t.description)}</td><td>${escapeHtml(t.source||"-")}</td><td class="money">${money(t.amount)}</td></tr>`).join("")||'<tr><td colspan="7" class="empty">No matching transactions</td></tr>';
+}
 function renderTransactions(){
- document.querySelector("#transactions").innerHTML=`<div class="section-head"><div><h2>Transactions</h2><p>Mỗi giao dịch chỉ nhập một lần.</p></div></div>
- <div class="table-wrap"><table><thead><tr><th>Date</th><th>Property</th><th>Type</th><th>Category</th><th>Description</th><th>Source</th><th class="money">Amount</th></tr></thead><tbody>
- ${state.transactions.slice().sort((a,b)=>b.date.localeCompare(a.date)).map(t=>`<tr><td>${t.date}</td><td>${propName(t.property)}</td><td><span class="badge">${t.type}</span></td><td>${t.category}</td><td>${t.description}</td><td>${t.source||"-"}</td><td class="money">${money(t.amount)}</td></tr>`).join("")||`<tr><td colspan="7" class="empty">No transactions yet</td></tr>`}
- </tbody></table></div>`;
+ const rows=filteredTransactions();
+ const spent=rows.filter(t=>t.type==="Expense").reduce((v,t)=>v+Number(t.amount||0),0);
+ const income=rows.filter(t=>t.type==="Income").reduce((v,t)=>v+Number(t.amount||0),0);
+ document.querySelector("#transactions").innerHTML=`<div class="section-head"><div><h2>Transactions</h2><p>Filter, search and export recorded transactions.</p></div></div>
+ ${transactionControls()}
+ <div class="tx-totals"><span><strong>${rows.length}</strong> transactions</span><span>Expenses <strong>${money(spent)}</strong></span><span>Income <strong>${money(income)}</strong></span></div>
+ <div class="table-wrap"><table><thead><tr><th>Date</th><th>Property</th><th>Type</th><th>Category</th><th>Description</th><th>Source</th><th class="money">Amount</th></tr></thead><tbody id="txRows">${transactionRows(rows)}</tbody></table></div>`;
+ bindTransactionControls();
+}
+function renderCalendar(){
+ const month=financeUi.month;
+ const [year,mon]=month.split("-").map(Number);
+ const start=new Date(year,mon-1,1),first=(start.getDay()+6)%7,days=new Date(year,mon,0).getDate();
+ const monthRows=state.transactions.filter(t=>isoDate(t.date).startsWith(month)&&(financeUi.property==="all"||financeUi.property===t.property));
+ const byDay={};for(const t of monthRows){const day=Number(t.date.slice(8,10));(byDay[day]??=[]).push(t)}
+ const cells=Array.from({length:first},()=>'<div class="calendar-day muted-day" aria-hidden="true"></div>');
+ for(let day=1;day<=days;day++){
+   const entries=byDay[day]||[],expenses=entries.filter(t=>t.type==="Expense").reduce((v,t)=>v+Number(t.amount||0),0),income=entries.filter(t=>t.type==="Income").reduce((v,t)=>v+Number(t.amount||0),0);
+   const iso=month+"-"+String(day).padStart(2,"0");
+   cells.push(`<button type="button" class="calendar-day ${entries.length?"has-entries":""}" data-day="${iso}"><span class="calendar-number">${day}</span>${entries.length?`<small>${entries.length} entries</small>`:""}${expenses?`<span class="calendar-expense">− ${shortMoney(expenses)}</span>`:""}${income?`<span class="calendar-income">+ ${shortMoney(income)}</span>`:""}</button>`);
+ }
+ document.querySelector("#calendar").innerHTML=`<div class="section-head"><div><h2>Transaction calendar</h2><p>Daily money movements based on recorded transactions (not bank balances).</p></div></div>
+ <div class="calendar-toolbar"><button type="button" class="ghost" id="calendarPrev" aria-label="Previous month">←</button><input type="month" id="calendarMonth" value="${month}" aria-label="Month"><button type="button" class="ghost" id="calendarNext" aria-label="Next month">→</button><select id="calendarProperty"><option value="all">All properties</option><option value="general">General / Portfolio</option>${state.properties.map(p=>`<option value="${escapeHtml(p.id)}">${escapeHtml(p.name)}</option>`).join("")}</select></div>
+ <div class="calendar-summary"><span>${monthRows.length} transactions</span><span>Expenses: <strong>${money(monthRows.filter(t=>t.type==="Expense").reduce((v,t)=>v+Number(t.amount||0),0))}</strong></span><span>Income: <strong>${money(monthRows.filter(t=>t.type==="Income").reduce((v,t)=>v+Number(t.amount||0),0))}</strong></span></div>
+ <div class="calendar-grid">${["Mon","Tue","Wed","Thu","Fri","Sat","Sun"].map(d=>`<div class="calendar-weekday">${d}</div>`).join("")}${cells.join("")}</div><div class="card calendar-details" id="calendarDetails"><p>Select a date to view transactions.</p></div>`;
+ const prevNext=n=>{const d=new Date(year,mon-1+n,1);financeUi.month=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0");renderCalendar()};
+ document.querySelector("#calendarPrev").onclick=()=>prevNext(-1);
+ document.querySelector("#calendarNext").onclick=()=>prevNext(1);
+ document.querySelector("#calendarMonth").onchange=e=>{if(/^\\d{4}-\\d{2}$/.test(e.target.value)){financeUi.month=e.target.value;renderCalendar()}};
+ const p=document.querySelector("#calendarProperty");p.value=financeUi.property;p.onchange=()=>{financeUi.property=p.value;renderCalendar();renderTransactions()};
+ document.querySelectorAll("[data-day]").forEach(button=>button.onclick=()=>{
+  const date=button.dataset.day,entries=monthRows.filter(t=>t.date===date);
+  document.querySelector("#calendarDetails").innerHTML=`<h3>${date} · ${entries.length} transactions</h3>${entries.length?'<div class="table-wrap"><table><thead><tr><th>Property</th><th>Type</th><th>Description</th><th class="money">Amount</th></tr></thead><tbody>'+entries.map(t=>`<tr><td>${escapeHtml(propName(t.property))}</td><td>${escapeHtml(t.type)}</td><td>${escapeHtml(t.description)}</td><td class="money">${money(t.amount)}</td></tr>`).join("")+'</tbody></table></div>':"<p>No entries on this day.</p>"}`;
+ });
 }
 
 function renderLoans(){
@@ -240,7 +300,7 @@ function bindPropertyRows(){
  document.querySelectorAll("[data-property]").forEach(el=>el.onclick=e=>{e.stopPropagation();openProperty(el.dataset.property)});
 }
 
-function renderAll(){renderDashboard();renderProperties();renderTransactions();renderLoans();renderRentals();renderSales();renderReports()}
+function renderAll(){renderDashboard();renderProperties();renderTransactions();renderCalendar();renderLoans();renderRentals();renderSales();renderReports()}
 renderAll();
 
 document.querySelectorAll(".nav-item").forEach(btn=>btn.addEventListener("click",()=>{
